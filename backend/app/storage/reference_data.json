@@ -1,0 +1,166 @@
+{
+  "cities": [
+    {
+      "id": "city-abuja",
+      "name": "Abuja",
+      "slug": "Abuja",
+      "center_lat": 9.0579,
+      "center_lng": 7.4951,
+      "radius_km": 35.0
+    },
+    {
+      "id": "city-ilorin",
+      "name": "Ilorin",
+      "slug": "Ilorin",
+      "center_lat": 8.4966,
+      "center_lng": 4.5426,
+      "radius_km": 35.0
+    },
+    {
+      "id": "city-lagos",
+      "name": "Lagos",
+      "slug": "Lagos",
+      "center_lat": 6.5244,
+      "center_lng": 3.3792,
+      "radius_km": 30.0
+    }
+  ],
+  "sports": [
+    {
+      "id": "sport-badminton",
+      "name": "Badminton",
+      "slug": "badminton",
+      "code": "BADMINTON"
+    },
+    {
+      "id": "sport-basketball",
+      "name": "Basketball",
+      "slug": "basketball",
+      "code": "BASKETBALL"
+    },
+    {
+      "id": "sport-cricket",
+      "name": "Cricket",
+      "slug": "cricket",
+      "code": "CRICKET"
+    },
+    {
+      "id": "sport-dodgeball",
+      "name": "Dodgeball",
+      "slug": "dodgeball",
+      "code": "DODGEBALL"
+    },
+    {
+      "id": "sport-flagfootball",
+      "name": "Flag Football",
+      "slug": "flagfootball",
+      "code": "FLAGFOOTBALL"
+    },
+    {
+      "id": "sport-football",
+      "name": "Football",
+      "slug": "football",
+      "code": "FOOTBALL"
+    },
+    {
+      "id": "sport-futsal",
+      "name": "Futsal",
+      "slug": "futsal",
+      "code": "FUTSAL"
+    },
+    {
+      "id": "sport-golf",
+      "name": "Golf",
+      "slug": "golf",
+      "code": "GOLF"
+    },
+    {
+      "id": "sport-rugby",
+      "name": "Rugby",
+      "slug": "rugby",
+      "code": "RUGBY"
+    },
+    {
+      "id": "sport-social",
+      "name": "Social",
+      "slug": "social",
+      "code": "SOCIAL"
+    },
+    {
+      "id": "sport-squash",
+      "name": "Squash",
+      "slug": "squash",
+      "code": "SQUASH"
+    },
+    {
+      "id": "sport-tennis",
+      "name": "Tennis",
+      "slug": "tennis",
+      "code": "TENNIS"
+    },
+    {
+      "id": "sport-volleyball",
+      "name": "Volleyball",
+      "slug": "volleyball",
+      "code": "VOLLEYBALL"
+    }
+  ],
+  "abilities": [
+    {
+      "id": "ability-advanced",
+      "name": "Advanced",
+      "slug": "advanced",
+      "code": null
+    },
+    {
+      "id": "ability-beginner",
+      "name": "Beginner",
+      "slug": "beginner",
+      "code": null
+    },
+    {
+      "id": "ability-lower-intermediate",
+      "name": "Lower Intermediate",
+      "slug": "lower-intermediate",
+      "code": null
+    },
+    {
+      "id": "ability-mid-intermediate",
+      "name": "Mid Intermediate",
+      "slug": "mid-intermediate",
+      "code": null
+    },
+    {
+      "id": "ability-mixed",
+      "name": "Mixed",
+      "slug": "mixed",
+      "code": null
+    },
+    {
+      "id": "ability-upper-intermediate",
+      "name": "Upper Intermediate",
+      "slug": "upper-intermediate",
+      "code": null
+    }
+  ],
+  "genders": [
+    {
+      "id": "gender-female",
+      "name": "Female",
+      "slug": "female",
+      "code": null
+    },
+    {
+      "id": "gender-male",
+      "name": "Male",
+      "slug": "male",
+      "code": null
+    },
+    {
+      "id": "gender-mixed",
+      "name": "Mixed",
+      "slug": "mixed",
+      "code": null
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Base colors */
+    --background: 0 0% 100%;
+    --foreground: 178 89% 7%;
+
+    /* Card colors */
+    --card: 0 0% 100%;
+    --card-foreground: 178 89% 7%;
+
+    /* Popover colors */
+    --popover: 0 0% 100%;
+    --popover-foreground: 178 89% 7%;
+
+    /* Primary - Vibrant orange-red */
+    --primary: 16 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 16 100% 60%;
+
+    /* Secondary - Bright orange */
+    --secondary: 28 100% 50%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Achievement/Points - Orange */
+    --achievement: 28 100% 50%;
+    --achievement-foreground: 0 0% 100%;
+
+    /* Success/Verified - Primary orange-red */
+    --success: 16 100% 50%;
+    --success-foreground: 0 0% 100%;
+
+    /* Muted colors */
+    --muted: 178 20% 96%;
+    --muted-foreground: 178 20% 40%;
+
+    /* Accent colors */
+    --accent: 16 100% 95%;
+    --accent-foreground: 16 100% 30%;
+
+    /* Destructive colors */
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Border and input */
+    --border: 178 20% 90%;
+    --input: 178 20% 90%;
+    --ring: 16 100% 50%;
+
+    --radius: 0.75rem;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(16 100% 50%), hsl(28 100% 50%));
+    --gradient-achievement: linear-gradient(135deg, hsl(28 100% 50%), hsl(16 100% 50%));
+    --gradient-success: linear-gradient(135deg, hsl(16 100% 50%), hsl(28 100% 50%));
+    --gradient-hero: linear-gradient(135deg, hsl(16 100% 50%) 0%, hsl(28 100% 50%) 50%, hsl(16 100% 60%) 100%);
+
+    /* Shadows */
+    --shadow-sm: 0 2px 8px hsl(16 100% 50% / 0.1);
+    --shadow-md: 0 4px 16px hsl(16 100% 50% / 0.15);
+    --shadow-lg: 0 8px 32px hsl(16 100% 50% / 0.2);
+    --shadow-glow: 0 0 40px hsl(16 100% 50% / 0.3);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* Sport category colors */
+    --sport-physical: 16 100% 50%;
+    --sport-esports: 28 100% 50%;
+    --sport-board: 16 100% 60%;
+  }
+
+  .dark {
+    --background: 178 89% 7%;
+    --foreground: 0 0% 100%;
+
+    --card: 178 70% 10%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 178 70% 10%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 16 100% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 16 100% 65%;
+
+    --secondary: 28 100% 55%;
+    --secondary-foreground: 0 0% 100%;
+
+    --achievement: 28 100% 55%;
+    --achievement-foreground: 0 0% 100%;
+
+    --success: 16 100% 55%;
+    --success-foreground: 0 0% 100%;
+
+    --muted: 178 50% 15%;
+    --muted-foreground: 178 20% 70%;
+
+    --accent: 178 50% 15%;
+    --accent-foreground: 16 100% 70%;
+
+    --destructive: 0 85% 65%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 178 40% 20%;
+    --input: 178 40% 20%;
+    --ring: 16 100% 55%;
+
+    /* Dark mode gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(16 100% 55%), hsl(28 100% 55%));
+    --gradient-achievement: linear-gradient(135deg, hsl(28 100% 55%), hsl(16 100% 55%));
+    --gradient-success: linear-gradient(135deg, hsl(16 100% 55%), hsl(28 100% 55%));
+    --gradient-hero: linear-gradient(135deg, hsl(16 100% 55%) 0%, hsl(28 100% 55%) 50%, hsl(16 100% 65%) 100%);
+
+    /* Dark shadows */
+    --shadow-sm: 0 2px 8px hsl(0 0% 0% / 0.3);
+    --shadow-md: 0 4px 16px hsl(0 0% 0% / 0.4);
+    --shadow-lg: 0 8px 32px hsl(0 0% 0% / 0.5);
+    --shadow-glow: 0 0 40px hsl(16 100% 55% / 0.25);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-poppins;
+  }
+}

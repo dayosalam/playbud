@@ -1,0 +1,11 @@
+[
+  {
+    "id": "f3654056-2b06-4554-99d0-0991a35a4773",
+    "email": "dayosalamboi@gmail.com",
+    "name": "Dayo salam",
+    "password_hash": "$argon2id$v=19$m=65536,t=3,p=4$FmKMsdYaI4QwJuQ859xbyw$INealXmEcJKopNcrtxaySHkDLOkkk49VUuvFpyIzBNw",
+    "avatar_url": null,
+    "organiser_id": "7b9952f7-f9ae-4c1a-a5c6-e0a48e34232b",
+    "created_at": "2025-11-03T09:57:06.420288"
+  }
+]

@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - backend/.env
+    ports:
+      - "2121:2121"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: social-sport-app/Dockerfile
+    environment:
+      - VITE_API_URL=http://localhost:2121/api
+    ports:
+      - "5173:23"
+    depends_on:
+      - backend
