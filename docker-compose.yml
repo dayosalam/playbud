@@ -1,5 +1,9 @@
 version: "3.9"
 
+networks:
+  app-network:
+    driver: bridge
+
 services:
   backend:
     build:
@@ -7,16 +11,37 @@ services:
       dockerfile: backend/Dockerfile
     env_file:
       - backend/.env
-    ports:
-      - "2121:2121"
-
+    expose:
+      - "2121"
+    networks:
+      - app-network
+    restart: unless-stopped
+  
   frontend:
     build:
       context: .
       dockerfile: social-sport-app/Dockerfile
     environment:
-      - VITE_API_URL=http://localhost:2121/api
-    ports:
-      - "5173:23"
+      - VITE_API_URL=https://playbud.site/api
+    expose:
+      - "23"
     depends_on:
       - backend
+    networks:
+      - app-network
+    restart: unless-stopped
+  
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - app-network
+    restart: unless-stopped

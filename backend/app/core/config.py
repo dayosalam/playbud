@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     api_title: str = "PlayBud API"
     api_version: str = "0.1.0"
 
-    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:2121"])
+    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173"])
     admin_emails_raw: str = Field("", env="ADMIN_EMAILS")
 
     supabase_url: str = Field("", env="SUPABASE_URL")
