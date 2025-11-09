@@ -58,8 +58,9 @@ export function AppFooter() {
           <div>
             <h3 className="font-semibold mb-4">Office</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>Plot 189 Jikwoyi</li>
-              <li>Phase 3 Extension</li>
+              <li>Plot 790, Alimoh-Abu Street,</li>
+              <li>Behind VIO Yard, Wuye District,</li>
+              <li>Abuja, Nigeria</li>
               <li>dayosalamboi@gmail.com</li>
             </ul>
           </div>
