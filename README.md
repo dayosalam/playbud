@@ -132,18 +132,17 @@ Visit `http://localhost:5173`. Ensure `VITE_API_URL` points at the backend host/
 
 ## Running with Docker
 
-From the repository root:
+1. Update `env.docker` with the ports and `VITE_API_URL` you want exposed.
+2. Build & run the stack (compose reads `env.docker` for substitution):
 
 ```bash
-docker-compose build
-docker-compose up
+docker-compose --env-file env.docker up --build
 ```
 
-- Backend → `http://localhost:8000`
-- Frontend → `http://localhost:5173`
+- Backend → `http://localhost:${BACKEND_PORT}` (default 8000)
+- Frontend → `http://localhost:${FRONTEND_PORT}` (default 5173)
 
-Environment variables are injected via `backend/.env` and `VITE_API_URL`.
-Stop the stack with `docker-compose down`.
+Environment variables are injected via `backend/.env` plus `env.docker` (for ports and frontend API URL). Stop the stack with `docker-compose --env-file env.docker down`.
 
 ---
 
