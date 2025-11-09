@@ -12,9 +12,7 @@ services:
     build:
       context: .
       dockerfile: social-sport-app/Dockerfile
-    environment:
-      - VITE_API_BASE_URL=http://localhost:2121/api
     ports:
-      - "5173:23"
+      - "5173:80"
     depends_on:
       - backend
