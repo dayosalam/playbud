@@ -48,7 +48,7 @@ const benefits = [
   {
     title: "Instant secure payments",
     description:
-      "No more chasing bank transfers – Sportas handles payments so you can focus on the session.",
+      "No more chasing bank transfers – Playbud handles payments so you can focus on the session.",
     icon: BadgeCheck,
   },
   {
@@ -540,14 +540,14 @@ const AddGame = () => {
                 Get the best out of your sports game for you &amp; your community
               </h1>
               <p className="text-base text-muted-foreground">
-                Sportas makes it simple to host recurring sessions: publish in minutes, manage player lists and let us handle the admin.
+                Playbud makes it simple to host recurring sessions: publish in minutes, manage player lists and let us handle the admin.
               </p>
               <div className="flex flex-wrap items-center gap-4">
                 <Button size="lg" className="rounded-full px-8" onClick={openOrganiserFlow}>
                   Add your game
                 </Button>
                 {/* <div className="flex flex-col text-xs text-muted-foreground">
-                  <span className="font-semibold text-foreground">Get Sportas on your phone. It’s free!</span>
+                  <span className="font-semibold text-foreground">Get Playbud on your phone. It’s free!</span>
                   <div className="flex items-center gap-3 text-sm font-medium text-primary/80">
                     <span>App Store ⭐ 4.7</span>
                     <span>Google Play ⭐ 4.8</span>
@@ -567,7 +567,7 @@ const AddGame = () => {
         <section className="bg-background">
           <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-16 md:flex-row md:items-start md:justify-between">
             <div className="md:w-1/3">
-              <h2 className="text-3xl font-semibold text-foreground">Why Sportas?</h2>
+              <h2 className="text-3xl font-semibold text-foreground">Why Playbud?</h2>
               <p className="mt-4 text-sm text-muted-foreground">
                 With a guided booking flow and tools built specifically for organisers, you stay in control while saving hours of admin every week.
               </p>
@@ -726,11 +726,11 @@ const AddGame = () => {
           <div className="space-y-5 text-sm text-muted-foreground">
             <div className="space-y-2">
               <span className="text-lg">🏟️ Venue booking</span>
-              <p>Book the court or pitch directly with the venue first. Sportas doesn’t arrange venue rentals.</p>
+              <p>Book the court or pitch directly with the venue first. Playbud doesn’t arrange venue rentals.</p>
             </div>
             <div className="space-y-2">
               <span className="text-lg">🤝 Exclusivity</span>
-              <p>Ask players to book via Sportas so the team sheet stays accurate and you can communicate easily.</p>
+              <p>Ask players to book via Playbud so the team sheet stays accurate and you can communicate easily.</p>
             </div>
             <div className="space-y-2">
               <span className="text-lg">📸 Make it attractive</span>
@@ -1095,7 +1095,7 @@ const AddGame = () => {
             />
             <div className="space-y-2">
               <p className="text-lg font-semibold text-foreground">Casual / Social Volleyball</p>
-              <p>Hosted by Sportas · Mixed ability · Stratford</p>
+              <p>Hosted by Playbud · Mixed ability · Stratford</p>
               <p>
                 “Join us for a relaxed session focused on rallying, improving together and cheering each other on. First-timers welcome!”
               </p>

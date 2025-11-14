@@ -705,7 +705,7 @@ const SpotDetails = () => {
                 </div>
                 <p className="text-xs text-muted-foreground/80">
                   {priceLabel === "Free"
-                    ? "This game is free to join on Sportas."
+                    ? "This game is free to join on Playbud."
                     : `This game is listed at ${priceLabel}. You’ll see any fees listed on the event page.`}
                 </p>
               </div>
