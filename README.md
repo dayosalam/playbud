@@ -86,10 +86,18 @@ SERVICE_ROLE=...
 JWT_SECRET_KEY=super-secret
 JWT_REFRESH_SECRET_KEY=super-refresh-secret
 ADMIN_EMAILS=admin@example.com,second.admin@example.com
+SMTP_HOST=smtp.yourprovider.com
+SMTP_PORT=587
+SMTP_USERNAME=ballerz@playbud.site
+SMTP_PASSWORD=your-smtp-password
+PASSWORD_RESET_URL=https://playbud.site/reset-password
+MAIL_FROM=ballerz@playbud.site
 ```
 
 - `SUPABASE_URL` / `SERVICE_ROLE` – service role key for Supabase PostgREST.
 - `ADMIN_EMAILS` – comma-separated list of emails allowed to access `/api/admin/*`.
+- `SMTP_*` / `MAIL_FROM` – configure transactional email (welcome, booking, reminders, password reset). Leave blank to disable sending.
+- `PASSWORD_RESET_URL` – base URL linked in the forgot-password email.
 
 ### Frontend (`social-sport-app/.env`)
 

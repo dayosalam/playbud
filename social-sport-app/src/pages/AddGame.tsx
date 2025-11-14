@@ -161,6 +161,7 @@ const AddGame = () => {
   });
   const [existingOrganizer, setExistingOrganizer] = useState<Organizer | null>(null);
   const [isOrganizerCheckInFlight, setIsOrganizerCheckInFlight] = useState(false);
+  const [isCreatingOrganizer, setIsCreatingOrganizer] = useState(false);
   const [gameForm, setGameForm] = useState<GameFormState>(() => ({ ...defaultGameForm }));
 
   const formattedSlug = useMemo(
@@ -281,6 +282,9 @@ const AddGame = () => {
     };
   }, [user?.id]);
 
+  const organizerProfileIncomplete =
+    !existingOrganizer || (existingOrganizer.sports?.length ?? 0) === 0;
+
   const openOrganiserFlow = () => {
     if (isOrganizerCheckInFlight) {
       toast({
@@ -290,15 +294,24 @@ const AddGame = () => {
       return;
     }
 
-    if (existingOrganizer) {
-      setIsCreateGameOpen(true);
+    if (organizerProfileIncomplete) {
+      setIsOrganiserModalOpen(true);
       return;
     }
 
-    setIsOrganiserModalOpen(true);
+    setIsCreateGameOpen(true);
   };
 
-  const handleOrganiserContinue = () => {
+  const handleOrganiserContinue = async () => {
+    if (!user?.id) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in before hosting a game.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!organiserForm.sports.trim() || !organiserForm.slug.trim()) {
       toast({
         title: "Tell us more",
@@ -307,9 +320,49 @@ const AddGame = () => {
       });
       return;
     }
-    setOrganiserForm((prev) => ({ ...prev, slug: formattedSlug }));
-    setIsOrganiserModalOpen(false);
-    setIsGuidanceOpen(true);
+
+    const nextSlug = formattedSlug.replace(/[^a-z0-9-]/g, "");
+    if (!nextSlug) {
+      toast({
+        title: "Invalid link",
+        description: "Your organiser link should only contain letters, numbers, or dashes.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const sportsList = organiserForm.sports
+      .split(/,|\n/)
+      .map((sport) => sport.trim())
+      .filter(Boolean);
+
+    const uniqueLink = nextSlug ? `https://playbud.app/organisers/${nextSlug}` : undefined;
+
+    const payload = {
+      user_id: user.id,
+      sports: sportsList,
+      experience: organiserForm.experience.trim() || undefined,
+      slug: nextSlug,
+      unique_link: uniqueLink,
+    } as const;
+
+    try {
+      setIsCreatingOrganizer(true);
+      const created = await ensureOrganizer(payload);
+      setOrganiserForm((prev) => ({ ...prev, slug: nextSlug }));
+      setExistingOrganizer(created);
+      setIsOrganiserModalOpen(false);
+      setIsGuidanceOpen(true);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not create organiser.";
+      toast({
+        title: "Setup failed",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingOrganizer(false);
+    }
   };
 
   const handleGuidanceNext = () => {
@@ -403,21 +456,27 @@ const AddGame = () => {
         ? `https://playbud.app/organisers/${formattedSlug}`
         : undefined;
 
-      let organiserRecord = existingOrganizer;
+      const organiserRecord = existingOrganizer;
       if (!organiserRecord) {
-        organiserRecord = await ensureOrganizer({
-          user_id: user.id,
-          slug: formattedSlug || undefined,
-          sports: sportsList,
-          experience: experienceText || undefined,
-          unique_link: uniqueLink,
+        toast({
+          title: "Organizer details required",
+          description: "Please share your organizer info before creating a game.",
+          variant: "destructive",
         });
-        setExistingOrganizer(organiserRecord);
-        setOrganiserForm({
-          sports: organiserRecord.sports.join(", "),
-          experience: organiserRecord.experience ?? "",
-          slug: organiserRecord.slug ?? "",
+        setIsCreateGameOpen(false);
+        setIsOrganiserModalOpen(true);
+        return;
+      }
+
+      if (organiserRecord.sports.length === 0) {
+        toast({
+          title: "Organizer details required",
+          description: "Add at least one sport to your organiser profile before creating a game.",
+          variant: "destructive",
         });
+        setIsCreateGameOpen(false);
+        setIsOrganiserModalOpen(true);
+        return;
       }
       const payload = {
         organiser_id: organiserRecord.id,
@@ -547,7 +606,7 @@ const AddGame = () => {
                 What organisers say
               </p>
               <p className="text-2xl font-semibold text-foreground">
-                “Sportas is really easy to use. We run all of our sessions through it and love seeing who’s signed up before we get to the venue.”
+                Playbud is really easy to use. We run all of our sessions through it and love seeing who’s signed up before we get to the venue.”
               </p>
               <div className="space-y-1 text-sm text-muted-foreground">
                 <p className="font-semibold text-foreground">Josh</p>
@@ -644,8 +703,12 @@ const AddGame = () => {
               </p>
             </div>
           </div>
-          <Button className="h-11 rounded-full" onClick={handleOrganiserContinue}>
-            Continue
+          <Button
+            className="h-11 rounded-full"
+            onClick={handleOrganiserContinue}
+            disabled={isCreatingOrganizer}
+          >
+            {isCreatingOrganizer ? "Saving…" : "Continue"}
           </Button>
         </DialogContent>
       </Dialog>

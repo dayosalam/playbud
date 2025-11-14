@@ -44,7 +44,7 @@ def _coerce_list(raw: object) -> list[str]:
 def _record_from_row(row: dict) -> OrganizerRecord:
     created_at = row.get("created_at")
     if isinstance(created_at, str):
-        created_at = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+        created_at = datetime.utcnow()
     elif created_at is None:
         created_at = datetime.utcnow()
     return OrganizerRecord(

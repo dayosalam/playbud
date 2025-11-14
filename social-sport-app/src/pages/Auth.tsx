@@ -52,8 +52,8 @@ const Auth = () => {
     setIsLoading(true);
     
     const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
+    const email = ((formData.get("email") as string) || "").trim().toLowerCase();
+    const password = (formData.get("password") as string) || "";
 
     try {
       await apiLogin({ email, password });
@@ -79,9 +79,9 @@ const Auth = () => {
     setIsLoading(true);
     
     const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const name = formData.get('name') as string;
+    const email = ((formData.get("email") as string) || "").trim().toLowerCase();
+    const password = (formData.get("password") as string) || "";
+    const name = (formData.get("name") as string) || "";
 
     const selectedCity = preferredCity || ((formData.get("city") as string) || "");
     const selectedHeardAbout = heardAbout || ((formData.get("source") as string) || "");
@@ -120,17 +120,8 @@ const Auth = () => {
       setIsLoading(false);
     }
   };
-  const handleForgotPassword = async () => {
-    const emailInput = window.prompt("Enter the email associated with your account:");
-    const email = emailInput?.trim();
-    if (!email) {
-      return;
-    }
-    
-    toast({
-      title: "Password reset",
-      description: "Please contact support – reset flow coming soon.",
-    });
+  const handleForgotPassword = () => {
+    navigate("/forgot-password");
   };
   
 
@@ -234,7 +225,7 @@ const Auth = () => {
 
               <Button 
                 type="submit" 
-                className="w-full h-12 bg-[#FF8B6A] hover:bg-[#FF8B6A]/90 text-white"
+                className="w-full h-12 hover:bg-[#FF8B6A]/90 text-white"
                 disabled={isLoading}
               >
                 {isLoading ? "Creating account..." : "Continue"}
@@ -317,7 +308,7 @@ const Auth = () => {
 
               <Button 
                 type="submit" 
-                className="w-full h-12 bg-[#FF8B6A] hover:bg-[#FF8B6A]/90 text-white"
+                className="w-full h-12 hover:bg-[#FF8B6A]/90 text-white"
                 disabled={isLoading}
               >
                 {isLoading ? "Signing in..." : "Sign In"}

@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
+import ForgotPassword from "./pages/ForgotPassword";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Favourites from "./pages/Favourites";
@@ -47,6 +48,14 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<Auth />} />
+          <Route
+            path="/forgot-password"
+            element={
+              <AppLayout showPrimaryCTA={false}>
+                <ForgotPassword />
+              </AppLayout>
+            }
+          />
           <Route
             path="/find-game"
             element={

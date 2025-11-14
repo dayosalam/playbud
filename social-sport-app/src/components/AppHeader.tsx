@@ -19,6 +19,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import brandIcon from "@/assets/icon.png";
 
 interface AppHeaderProps {
   showPrimaryCTA?: boolean;
@@ -95,9 +96,11 @@ export function AppHeader({ showPrimaryCTA = true }: AppHeaderProps) {
             onClick={() => navigate("/")}
             className="flex items-center gap-3"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-              PB
-            </div>
+            <img
+              src={brandIcon}
+              alt="PlayBud logo"
+              className="h-10 w-10 rounded-full object-cover"
+            />
             <div className="flex flex-col text-left leading-tight">
               <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
                 PlayBud
@@ -183,9 +186,11 @@ export function AppHeader({ showPrimaryCTA = true }: AppHeaderProps) {
             onClick={() => navigate("/")}
             className="flex items-center gap-2 text-left"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-              PB
-            </div>
+            <img
+              src={brandIcon}
+              alt="PlayBud logo"
+              className="h-9 w-9 rounded-full object-cover"
+            />
             <div className="leading-tight">
               <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">PlayBud</p>
             </div>

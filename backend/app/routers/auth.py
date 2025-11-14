@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
-from ..schemas.auth import UserCreate, UserLogin, TokenResponse, UserBase
+from ..schemas.auth import PasswordResetRequest, UserCreate, UserLogin, TokenResponse, UserBase
 from ..services import auth_service
 from ..core.security import get_subject_from_token, TokenDecodeError
 
@@ -36,3 +36,9 @@ def _get_current_user(token: str = Depends(oauth2_scheme)) -> UserBase:
 @router.get("/me", response_model=UserBase)
 async def get_me(current_user: UserBase = Depends(_get_current_user)) -> UserBase:
     return current_user
+
+
+@router.post("/forgot-password")
+async def forgot_password(payload: PasswordResetRequest) -> dict[str, str]:
+    auth_service.request_password_reset(payload.email)
+    return {"message": "If an account exists, you'll get an email shortly."}

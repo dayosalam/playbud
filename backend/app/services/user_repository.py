@@ -9,6 +9,7 @@ from postgrest.exceptions import APIError
 from supabase import Client
 
 from .supabase_client import get_supabase_client
+from .helper import parse_iso_datetime
 
 USERS_TABLE = "users"
 
@@ -37,7 +38,10 @@ class UserRecord(BaseModel):
 def _parse_user(row: dict) -> UserRecord:
     created_at = row.get("created_at")
     if isinstance(created_at, str):
-        created_at = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+        try:
+            created_at = parse_iso_datetime(created_at)
+        except ValueError:
+            created_at = datetime.utcnow()
     elif created_at is None:
         created_at = datetime.utcnow()
     return UserRecord(

@@ -10,6 +10,7 @@ class UserBase(BaseModel):
     created_at: datetime | None = None
     preferred_city: str | None = None
     heard_about: str | None = None
+    organiser_id: str | None = None
 
 
 class UserCreate(BaseModel):
@@ -30,3 +31,7 @@ class TokenResponse(BaseModel):
     refresh_token: str
     token_type: str = "bearer"
     user: UserBase
+
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr

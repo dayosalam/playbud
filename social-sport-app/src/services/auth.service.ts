@@ -8,6 +8,7 @@ export interface AuthUser {
   createdAt?: string | null;
   preferredCity?: string | null;
   heardAbout?: string | null;
+  organiserId?: string | null;
 }
 
 interface AuthResponse {
@@ -22,6 +23,7 @@ interface AuthResponse {
     created_at?: string | null;
     preferred_city?: string | null;
     heard_about?: string | null;
+    organiser_id?: string | null;
   };
 }
 
@@ -66,6 +68,13 @@ export function logout() {
   clearStoredTokens();
 }
 
+export function requestPasswordReset(email: string): Promise<void> {
+  return apiRequest<void>("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
 function mapUser(user: AuthResponse["user"]): AuthUser {
   return {
     id: user.id,
@@ -75,5 +84,6 @@ function mapUser(user: AuthResponse["user"]): AuthUser {
     createdAt: user.created_at ?? undefined,
     preferredCity: user.preferred_city ?? undefined,
     heardAbout: user.heard_about ?? undefined,
+    organiserId: user.organiser_id ?? undefined,
   };
 }

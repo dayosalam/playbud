@@ -36,6 +36,7 @@ import {
   gameToSpot,
   type SpotTransformLookups,
 } from "@/utils/game-to-spot";
+import brandIcon from "@/assets/icon.png";
 
 type LocationState = {
   spot?: Spot;
@@ -117,7 +118,7 @@ const getInitialsFromName = (name: string) =>
     .filter(Boolean)
     .map((part) => part[0]?.toUpperCase() ?? "")
     .join("")
-    .slice(0, 2) || "PB";
+    .slice(0, 2) || "";
 
 const SpotDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -227,7 +228,7 @@ const SpotDetails = () => {
   }, [spot]);
 
   const hostInitials = useMemo(
-    () => getInitialsFromName(spot?.hostName ?? "PB"),
+    () => getInitialsFromName(spot?.hostName ?? ""),
     [spot?.hostName]
   );
 
@@ -444,8 +445,16 @@ const SpotDetails = () => {
                   View all games
                 </button>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-lg font-semibold text-primary">
-                {hostInitials}
+              <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-lg font-semibold text-primary">
+                {hostInitials ? (
+                  hostInitials
+                ) : (
+                  <img
+                    src={brandIcon}
+                    alt="PlayBud host avatar"
+                    className="h-full w-full object-cover"
+                  />
+                )}
               </div>
             </header>
 
@@ -550,8 +559,16 @@ const SpotDetails = () => {
                 className="flex items-center justify-between rounded-2xl border border-border bg-background px-3 py-2.5"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary/40 bg-primary/10 text-sm font-semibold text-primary">
-                    {player.initials}
+                  <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-primary/40 bg-primary/10 text-sm font-semibold text-primary">
+                    {player.initials ? (
+                      player.initials
+                    ) : (
+                      <img
+                        src={brandIcon}
+                        alt={`${player.name} avatar`}
+                        className="h-full w-full object-cover"
+                      />
+                    )}
                   </div>
                   <p className="text-sm font-medium text-foreground">
                     <Link

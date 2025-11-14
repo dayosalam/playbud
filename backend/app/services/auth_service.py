@@ -1,8 +1,11 @@
 from fastapi import HTTPException, status
 
 from ..core import security
-from ..schemas.auth import UserCreate, UserLogin, TokenResponse, UserBase
-from . import user_repository
+from ..core.config import get_settings
+from ..schemas.auth import PasswordResetRequest, UserCreate, UserLogin, TokenResponse, UserBase
+from . import user_repository, email_service
+
+settings = get_settings()
 
 
 def _user_to_response(record: user_repository.UserRecord) -> UserBase:
@@ -14,6 +17,7 @@ def _user_to_response(record: user_repository.UserRecord) -> UserBase:
         created_at=record.created_at,
         preferred_city=record.preferred_city,
         heard_about=record.heard_about,
+        organiser_id=record.organiser_id,
     )
 
 
@@ -37,11 +41,21 @@ def signup(payload: UserCreate) -> TokenResponse:
     access_token = security.create_access_token(record.id)
     refresh_token = security.create_refresh_token(record.id)
 
-    return TokenResponse(
+    response = TokenResponse(
         access_token=access_token,
         refresh_token=refresh_token,
         user=_user_to_response(record),
     )
+    try:
+        sent = email_service.send_welcome_email(recipient=record.email, name=record.name)
+        if not sent:
+            print("⚠️  Welcome email not sent (check SMTP settings).")
+    except Exception as exc:  # noqa: BLE001
+        print(f"⚠️  Welcome email failed: {exc}")
+    return response
+
+
+
 
 
 def login(payload: UserLogin) -> TokenResponse:
@@ -67,3 +81,15 @@ def get_user(user_id: str) -> UserBase:
     if not record:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return _user_to_response(record)
+
+
+def request_password_reset(email: str) -> None:
+    record = user_repository.get_user_by_email(email)
+    if not record:
+        return
+
+    from ..services.supabase_client import get_supabase_client
+    client = get_supabase_client()
+    if client is None:
+        return
+    client.auth.reset_password_for_email(record.email, options={"redirect_to": settings.password_reset_url})

@@ -1,11 +1,19 @@
 from __future__ import annotations
 
 from datetime import datetime, time, timedelta
+from math import ceil
 from typing import List
 
 from ..schemas.bookings import BookingResponse, GameWithBooking
 from ..schemas.games import Game
-from . import booking_repository, game_repository, notification_service
+from . import (
+    booking_repository,
+    game_repository,
+    notification_service,
+    email_service,
+    user_repository,
+    organizer_repository,
+)
 
 
 class BookingNotFoundError(Exception):
@@ -64,6 +72,18 @@ def _parse_cancellation_hours(cancellation: str | None) -> float:
         return 24.0
 
 
+def _get_game_owner_user(game: Game):
+    if getattr(game, "created_by_user_id", None):
+        user_record = user_repository.get_user_by_id(game.created_by_user_id)
+        if user_record:
+            return user_record
+    if getattr(game, "organiser_id", None):
+        organizer_record = organizer_repository.get_by_id(game.organiser_id)
+        if organizer_record:
+            return user_repository.get_user_by_id(organizer_record.user_id)
+    return None
+
+
 def join_game(game_id: str, user_id: str, notes: str | None = None) -> BookingResponse:
     game = game_repository.get_game(game_id)
     if not game:
@@ -91,9 +111,41 @@ def join_game(game_id: str, user_id: str, notes: str | None = None) -> BookingRe
         notes=notes,
     )
 
+    new_count = current_count + 1
     updated_ids = list(dict.fromkeys([*game.participant_user_ids, user_id]))
     game_repository.update_participant_user_ids(game.id, updated_ids)
     game.participant_user_ids = updated_ids
+
+    participant = user_repository.get_user_by_id(user_id)
+    if participant:
+        email_service.send_booking_confirmation_email(
+            game=game,
+            participant_name=participant.name,
+            participant_email=participant.email,
+        )
+        email_service.schedule_game_reminder_email(
+            game=game,
+            recipient=participant.email,
+            name=participant.name,
+        )
+
+    owner = _get_game_owner_user(game)
+    if owner:
+        total_players = max(game.players or 0, 0)
+        half_target = max(1, ceil(total_players / 2)) if total_players else 1
+        if new_count == half_target and total_players > 1:
+            email_service.send_game_half_full_email(
+                game=game,
+                organiser_name=owner.name,
+                organiser_email=owner.email,
+                current_count=new_count,
+            )
+        if new_count == total_players and total_players > 0:
+            email_service.send_game_full_email(
+                game=game,
+                organiser_name=owner.name,
+                organiser_email=owner.email,
+            )
 
     notification_service.send_booking_confirmation(user_id, game)
     if game.organiser_id:
