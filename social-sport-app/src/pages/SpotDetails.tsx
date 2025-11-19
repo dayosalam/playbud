@@ -139,6 +139,11 @@ const SpotDetails = () => {
   const [attendeeName, setAttendeeName] = useState("");
   const [attendeeEmail, setAttendeeEmail] = useState("");
   const [note, setNote] = useState("");
+  useEffect(() => {
+    if (isJoinOpen && user?.email && !attendeeEmail) {
+      setAttendeeEmail(user.email);
+    }
+  }, [isJoinOpen, user?.email, attendeeEmail]);
   const refreshGame = useCallback(async () => {
     if (!id) {
       return;
