@@ -661,7 +661,7 @@ const SpotDetails = () => {
         </aside>
       </div>
       <Dialog open={isJoinOpen} onOpenChange={setIsJoinOpen}>
-        <DialogContent className="max-w-lg rounded-3xl p-0">
+        <DialogContent className="max-w-lg rounded-3xl p-0 max-h-[90vh] overflow-hidden">
           <DialogHeader className="space-y-1 border-b border-border px-6 py-4 text-left">
             <DialogTitle className="text-xl font-semibold text-foreground">
               Join {spot.title}
@@ -673,7 +673,7 @@ const SpotDetails = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 px-6 py-6">
+          <div className="space-y-6 px-6 py-6 overflow-y-auto max-h-[75vh]">
             <section className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="join-name" className="text-sm font-medium">

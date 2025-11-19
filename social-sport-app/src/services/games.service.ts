@@ -52,14 +52,12 @@ export function listGames(limit = 50): Promise<GameResponse[]> {
   const params = new URLSearchParams({ limit: String(limit) });
   return apiRequest<GameResponse[]>(`/games/?${params.toString()}`, {
     method: "GET",
-    auth: true,
   });
 }
 
 export function getGame(id: string): Promise<GameResponse> {
   return apiRequest<GameResponse>(`/games/${id}`, {
     method: "GET",
-    auth: true,
   });
 }
 

@@ -255,52 +255,62 @@ export function AppHeader({ showPrimaryCTA = true }: AppHeaderProps) {
           >
             <Bell className="h-4 w-4" />
           </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="flex items-center gap-3 rounded-full border border-border bg-background/80 px-3 py-1.5 text-sm font-medium hover:bg-background"
-              >
-                <span className="hidden text-muted-foreground sm:inline">
-                  Hi, <span className="text-foreground">{userName}!</span>
-                </span>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-primary text-sm font-semibold text-white">
-                  {userInitials}
-                </div>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-[220px] rounded-2xl">
-              <DropdownMenuItem
-                onClick={() => navigate("/profile")}
-                className="flex items-center gap-3 py-2.5 text-sm font-medium"
-              >
-                <List className="h-4 w-4" />
-                My Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => navigate("/settings")}
-                className="flex items-center gap-3 py-2.5 text-sm font-medium"
-              >
-                <List className="h-4 w-4" />
-                Account Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => navigate("/favourites")}
-                className="flex items-center gap-3 py-2.5 text-sm font-medium"
-              >
-                <List className="h-4 w-4" />
-                Favourite Games
-              </DropdownMenuItem>
-              <Separator className="my-1" />
-              <DropdownMenuItem
-                onClick={handleLogout}
-                className="flex items-center gap-3 py-2.5 text-sm font-medium text-destructive focus:text-destructive"
-              >
-                <LogOut className="h-4 w-4" />
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-3 rounded-full border border-border bg-background/80 px-3 py-1.5 text-sm font-medium hover:bg-background"
+                >
+                  <span className="hidden text-muted-foreground sm:inline">
+                    Hi, <span className="text-foreground">{userName}!</span>
+                  </span>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-primary text-sm font-semibold text-white">
+                    {userInitials}
+                  </div>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[220px] rounded-2xl">
+                <DropdownMenuItem
+                  onClick={() => navigate("/profile")}
+                  className="flex items-center gap-3 py-2.5 text-sm font-medium"
+                >
+                  <List className="h-4 w-4" />
+                  My Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => navigate("/settings")}
+                  className="flex items-center gap-3 py-2.5 text-sm font-medium"
+                >
+                  <List className="h-4 w-4" />
+                  Account Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => navigate("/favourites")}
+                  className="flex items-center gap-3 py-2.5 text-sm font-medium"
+                >
+                  <List className="h-4 w-4" />
+                  Favourite Games
+                </DropdownMenuItem>
+                <Separator className="my-1" />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="flex items-center gap-3 py-2.5 text-sm font-medium text-destructive focus:text-destructive"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button
+              variant="outline"
+              className="rounded-full border-primary px-5 text-sm font-semibold text-primary hover:bg-primary hover:text-primary-foreground"
+              onClick={() => navigate("/auth?mode=signup")}
+            >
+              Sign up
+            </Button>
+          )}
         </div>
       </div>
     </header>
