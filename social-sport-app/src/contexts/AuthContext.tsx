@@ -1,5 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { getCurrentUser, logout as apiLogout, AuthUser } from "@/services/auth.service";
+import { getStoredAccessToken } from "@/services/api-client";
+
+const USER_CACHE_KEY = "pb_cached_user";
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -11,16 +14,34 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function loadCachedUser(): AuthUser | null {
+  try {
+    const raw = localStorage.getItem(USER_CACHE_KEY);
+    return raw ? (JSON.parse(raw) as AuthUser) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(() => loadCachedUser());
   const [isLoading, setIsLoading] = useState(true);
 
   const refreshUser = async () => {
+    const token = getStoredAccessToken();
+    if (!token) {
+      setUser(null);
+      localStorage.removeItem(USER_CACHE_KEY);
+      setIsLoading(false);
+      return;
+    }
     try {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
+      localStorage.setItem(USER_CACHE_KEY, JSON.stringify(currentUser));
     } catch (error) {
       setUser(null);
+      localStorage.removeItem(USER_CACHE_KEY);
     } finally {
       setIsLoading(false);
     }
@@ -33,6 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     apiLogout();
     setUser(null);
+    localStorage.removeItem(USER_CACHE_KEY);
   };
 
   return (

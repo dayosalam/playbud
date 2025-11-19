@@ -91,13 +91,6 @@ def join_game(game_id: str, user_id: str, notes: str | None = None) -> BookingRe
 
     _ensure_game_future(game)
 
-    cancellation_hours = _parse_cancellation_hours(getattr(game, "cancellation", None))
-    cancel_deadline = _event_datetime(game) - timedelta(hours=cancellation_hours)
-    join_cutoff = cancel_deadline - timedelta(minutes=30)
-    now = datetime.utcnow()
-    if now >= join_cutoff:
-        raise BookingValidationError("This game is no longer accepting joins.")
-
     if booking_repository.get_booking(game_id, user_id):
         raise BookingValidationError("You have already joined this game.")
 

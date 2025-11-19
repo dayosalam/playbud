@@ -6,7 +6,6 @@ import {
   Clock,
   MapPin,
   Users,
-  Trophy,
   ShieldCheck,
   Wallet,
 } from "lucide-react";
@@ -36,6 +35,7 @@ import {
   gameToSpot,
   type SpotTransformLookups,
 } from "@/utils/game-to-spot";
+import { useAuth } from "@/contexts/AuthContext";
 import brandIcon from "@/assets/icon.png";
 
 type LocationState = {
@@ -99,9 +99,10 @@ const formatDate = (dateString: string) =>
   });
 
 const formatTime = (dateString: string) =>
-  new Date(dateString).toLocaleTimeString("en-GB", {
+  new Date(dateString).toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
+    hour12: true,
   });
 
   const formatPrice = (spot: Spot) => {
@@ -126,6 +127,7 @@ const SpotDetails = () => {
   const location = useLocation();
   const locationSpot = (location.state as LocationState | undefined)?.spot ?? null;
   const { toast } = useToast();
+  const { isAuthenticated, user } = useAuth();
 
   const [lookups, setLookups] = useState<SpotTransformLookups>(() => createEmptyLookups());
   const [rawGame, setRawGame] = useState<GameResponse | null>(null);
@@ -133,6 +135,7 @@ const SpotDetails = () => {
   const [error, setError] = useState<string | null>(null);
   const [isJoinOpen, setIsJoinOpen] = useState(false);
   const [isJoinSubmitting, setIsJoinSubmitting] = useState(false);
+  const [hasJoined, setHasJoined] = useState(false);
   const [attendeeName, setAttendeeName] = useState("");
   const [attendeeEmail, setAttendeeEmail] = useState("");
   const [note, setNote] = useState("");
@@ -209,6 +212,29 @@ const SpotDetails = () => {
     }
     return locationSpot;
   }, [rawGame, lookups, locationSpot]);
+
+  useEffect(() => {
+    if (spot?.players && user?.id) {
+      setHasJoined(spot.players.some((player) => player.id === user.id));
+    } else {
+      setHasJoined(false);
+    }
+  }, [spot?.players, user?.id]);
+  const handleJoinButtonClick = () => {
+    if (!spot) {
+      return;
+    }
+    if (!isAuthenticated) {
+      toast({
+        title: "Sign in required",
+        description: "Create an account or log in before joining a game.",
+        variant: "destructive",
+      });
+      navigate("/auth", { state: { from: `/games/${spot.id}` } });
+      return;
+    }
+    setIsJoinOpen(true);
+  };
   const mapsUrl = useMemo(() => {
     if (!spot) {
       return null;
@@ -231,12 +257,17 @@ const SpotDetails = () => {
     () => getInitialsFromName(spot?.hostName ?? ""),
     [spot?.hostName]
   );
+  const [participantNameOverrides, setParticipantNameOverrides] = useState<
+    Record<string, { name: string; initials: string }>
+  >({});
 
   const displayParticipants = useMemo<DisplayParticipant[]>(() => {
     const players = spot?.players ?? [];
     return players.map((player, index) => {
-      const name = player.name?.trim() || `Player ${index + 1}`;
-      const initials = player.initials || getInitialsFromName(name);
+      const override = player.id ? participantNameOverrides[player.id] : undefined;
+      const fallbackName = player.name?.trim() || `Player ${index + 1}`;
+      const name = override?.name || fallbackName;
+      const initials = override?.initials || player.initials || getInitialsFromName(name);
       const profileHref = player.id ? `/profile?user=${player.id}` : "/profile";
       return {
         id: player.id || `player-${index}`,
@@ -245,7 +276,7 @@ const SpotDetails = () => {
         profileHref,
       };
     });
-  }, [spot?.players]);
+  }, [spot?.players, participantNameOverrides]);
 
   const resetForm = () => {
     setAttendeeName("");
@@ -268,6 +299,17 @@ const SpotDetails = () => {
         .join(" | ") || undefined;
 
       await joinGameBooking(spot.id, { notes: assembledNotes });
+      if (user?.id) {
+        const providedName = attendeeName.trim() || user.name || `Player`;
+        setParticipantNameOverrides((prev) => ({
+          ...prev,
+          [user.id]: {
+            name: providedName,
+            initials: getInitialsFromName(providedName),
+          },
+        }));
+      }
+      setHasJoined(true);
       setIsJoinOpen(false);
       toast({
         title: "You're in!",
@@ -363,9 +405,10 @@ const SpotDetails = () => {
     {/* Join Game button below for mobile */}
     <Button
       className="mt-3 rounded-full bg-primary px-5 text-sm sm:hidden font-semibold text-primary-foreground hover:bg-primary/90 w-full"
-      onClick={() => setIsJoinOpen(true)}
+      onClick={handleJoinButtonClick}
+      disabled={hasJoined}
     >
-      Join Game
+      {hasJoined ? "Joined" : "Join Game"}
     </Button>
   </div>
 
@@ -376,9 +419,10 @@ const SpotDetails = () => {
     </Badge>
     <Button
       className="rounded-full bg-primary px-5 text-sm sm:text-base font-semibold text-primary-foreground hover:bg-primary/90"
-      onClick={() => setIsJoinOpen(true)}
+      onClick={handleJoinButtonClick}
+      disabled={hasJoined}
     >
-      Join Game
+      {hasJoined ? "Joined" : "Join Game"}
     </Button>
   </div>
 </div>
@@ -399,7 +443,11 @@ const SpotDetails = () => {
             </div>
             <div className="grid gap-6 border-t border-border px-6 py-6 sm:grid-cols-4">
               <div className="flex flex-col items-center gap-2 text-center text-sm text-muted-foreground">
-                <Trophy className="h-5 w-5 text-primary" />
+                <img
+                  src={brandIcon}
+                  alt="PlayBud"
+                  className="h-5 w-5 rounded-full object-cover"
+                />
                 <span className="text-sm font-semibold text-foreground">
                   {spot.sportCode}
                 </span>
@@ -602,9 +650,10 @@ const SpotDetails = () => {
                 <Button
                   variant="outline"
                   className="rounded-full border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                  onClick={() => setIsJoinOpen(true)}
+                  onClick={handleJoinButtonClick}
+                  disabled={hasJoined}
                 >
-                  Join
+                  {hasJoined ? "Joined" : "Join"}
                 </Button>
               </div>
             )}
@@ -705,7 +754,7 @@ const SpotDetails = () => {
                 </div>
                 <p className="text-xs text-muted-foreground/80">
                   {priceLabel === "Free"
-                    ? "This game is free to join on Playbud."
+                    ? "This game is free to join on PlayBud."
                     : `This game is listed at ${priceLabel}. You’ll see any fees listed on the event page.`}
                 </p>
               </div>

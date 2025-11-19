@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 const CompanyEvents = () => {
   const navigate = useNavigate();
-  const email = "hello@playbud.app";
+  const email = "ballerz@playbud.site";
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-4xl flex-col gap-10 px-6 py-16 text-center">

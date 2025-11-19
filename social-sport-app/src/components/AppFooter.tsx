@@ -1,5 +1,6 @@
-import { Trophy, Instagram, Linkedin, X } from "lucide-react";
+import { Instagram, Linkedin, X } from "lucide-react";
 import { Link } from "react-router-dom";
+import brandIcon from "@/assets/icon.png";
 
 const sportLinks = [
   { label: "Basketball", code: "BASKETBALL" },
@@ -81,9 +82,10 @@ export function AppFooter() {
         </div>
         <div className="mt-12 pt-8 border-t border-border text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Trophy className="w-6 h-6 text-primary" />
+            <img src={brandIcon} alt="PlayBud" className="h-8 w-8 rounded-full object-cover" />
             <span className="text-xl font-bold">
-              PLAY<span className="text-primary">BUD</span>
+              <span className="text-[#e8702c]">Play</span>
+              <span className="text-[#223c61]">Bud</span>
             </span>
           </div>
           <p className="text-sm text-muted-foreground">

@@ -103,7 +103,8 @@ export function AppHeader({ showPrimaryCTA = true }: AppHeaderProps) {
             />
             <div className="flex flex-col text-left leading-tight">
               <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                PlayBud
+                <span className="text-[#e8702c]">Play</span>
+                <span className="text-[#223c61]">Bud</span>
               </span>
               <span className="text-sm font-semibold text-foreground">{pageLabel}</span>
             </div>
@@ -132,7 +133,7 @@ export function AppHeader({ showPrimaryCTA = true }: AppHeaderProps) {
           </div>
         </div>
 
-        <SheetContent side="left" className="w-[85%] max-w-sm px-0">
+        <SheetContent side="left" className="w-[85%] max-w-sm px-0" aria-describedby={undefined}>
           <SheetHeader className="px-6">
             <SheetTitle className="text-left text-lg font-semibold">Menu</SheetTitle>
           </SheetHeader>
@@ -192,7 +193,10 @@ export function AppHeader({ showPrimaryCTA = true }: AppHeaderProps) {
               className="h-9 w-9 rounded-full object-cover"
             />
             <div className="leading-tight">
-              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">PlayBud</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                <span className="text-[#e8702c]">Play</span>
+                <span className="text-[#223c61]">Bud</span>
+              </p>
             </div>
           </button>
         </div>

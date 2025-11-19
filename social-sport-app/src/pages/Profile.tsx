@@ -20,7 +20,6 @@ import {
   Clock,
   Loader2,
   MapPin,
-  Trophy,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -32,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { fetchReferenceData } from "@/services/reference.service";
 import { getMyGames, type GameWithBooking } from "@/services/bookings.service";
+import brandIcon from "@/assets/icon.png";
 
 interface User {
   id: string;
@@ -76,13 +76,15 @@ const combineDateAndTime = (dateIso: string, time?: string | null) => {
 };
 
 const formatTimeRange = (start: Date, end: Date) => {
-  return `${start.toLocaleTimeString("en-GB", {
+  const opts: Intl.DateTimeFormatOptions = {
     hour: "numeric",
     minute: "2-digit",
-  })} – ${end.toLocaleTimeString("en-GB", {
-    hour: "numeric",
-    minute: "2-digit",
-  })}`;
+    hour12: true,
+  };
+  return `${start.toLocaleTimeString("en-US", opts)} – ${end.toLocaleTimeString(
+    "en-US",
+    opts,
+  )}`;
 };
 
 const Profile = () => {
@@ -334,7 +336,11 @@ const Profile = () => {
                 </CardDescription>
                 {user.reputationScore !== undefined && (
                   <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                    <Trophy className="h-4 w-4 text-primary" />
+                    <img
+                      src={brandIcon}
+                      alt="PlayBud"
+                      className="h-4 w-4 rounded-full object-cover"
+                    />
                     <span>{user.reputationScore} reputation points</span>
                   </div>
                 )}

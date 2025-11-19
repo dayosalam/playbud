@@ -110,6 +110,28 @@ def send_welcome_email(*, recipient: str, name: str | None = None) -> bool:
     return _send_email(subject="Welcome to PlayBud", recipient=recipient, text_body=text_body, html_body=html_body)
 
 
+def send_beta_invite_email(*, recipient: str, name: str | None = None, link: str = "https://playbud.site") -> bool:
+    greeting = f"Hi {name}," if name else "Hi,"
+    text_body = (
+        f"{greeting}\n\nI’ve been heads-down building the PlayBud MVP for the last month and would love your help as a beta tester."
+        "\nJump in, take it for a spin, and feel free to share it with friends or your community."
+        f"\n\nHere’s the link: {link}\n\nAny feedback is gold. Thank you for being part of the very first testers!"
+        "\n\n— Dayo Salam, Builder of PlayBud For Ballerz☄️"
+    )
+    html_body = _hero_html(
+        "You're invited to test PlayBud",
+        f"{greeting}<br/>I’ve been building PlayBud for the last month. I’d love for you to try the MVP, kick the tires, and share it with anyone who might enjoy it.<br/><br/><strong>Dayo Salam</strong><br/>Builder, PlayBud",
+        "Open the MVP",
+        link,
+    )
+    return _send_email(
+        subject="Beta test the PlayBud MVP",
+        recipient=recipient,
+        text_body=text_body,
+        html_body=html_body,
+    )
+
+
 def send_organizer_review_email(*, recipient: str, name: str | None = None) -> bool:
     greeting = f"Hi {name}," if name else "Hi organiser,"
     text_body = (

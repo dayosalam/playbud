@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   MapPin,
   Users,
-  Trophy,
   Shield,
   Calendar,
   Clock,
@@ -33,6 +32,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { submitFeedback } from "@/services/feedback.service";
+import brandIcon from "@/assets/icon.png";
 
 
 const Landing = () => {
@@ -159,9 +159,10 @@ const Landing = () => {
         <header className="border-b border-border">
           <div className="container mx-auto flex items-center justify-between px-4 py-4">
             <div className="flex items-center gap-2">
-              <Trophy className="h-8 w-8 text-primary" />
+              <img src={brandIcon} alt="PlayBud" className="h-10 w-10 rounded-full object-cover" />
               <span className="text-2xl font-bold">
-                PLAY<span className="text-primary">BUD</span>
+                <span className="text-[#e8702c]">Play</span>
+                <span className="text-[#223c61]">Bud</span>
               </span>
             </div>
             <nav className="hidden items-center gap-6 md:flex">
@@ -339,7 +340,12 @@ const Landing = () => {
         {/* Left: centered heading */}
         <div className="flex justify-center md:justify-center text-center md:text-center">
           <h2 className="text-5xl font-bold tracking-tight">
-            Why <span className="text-primary">PlayBud?</span>
+            Why{" "}
+            <span>
+              <span className="text-[#e8702c]">Play</span>
+              <span className="text-[#223c61]">Bud</span>
+            </span>
+            ?
           </h2>
         </div>
 

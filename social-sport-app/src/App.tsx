@@ -43,7 +43,7 @@ const App = () => (
   <TooltipProvider>
     <Toaster />
     <Sonner />
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_relativeSplatPath: true }}>
       <AuthProvider>
         <Routes>
           <Route path="/" element={<Landing />} />
@@ -59,31 +59,25 @@ const App = () => (
           <Route
             path="/find-game"
             element={
-              <ProtectedRoute>
-                <AppLayout showPrimaryCTA={false}>
-                  <FindGame />
-                </AppLayout>
-              </ProtectedRoute>
+              <AppLayout showPrimaryCTA={false}>
+                <FindGame />
+              </AppLayout>
             }
           />
           <Route
             path="/add-game"
             element={
-              <ProtectedRoute>
-                <AppLayout showPrimaryCTA={false}>
-                  <AddGame />
-                </AppLayout>
-              </ProtectedRoute>
+              <AppLayout showPrimaryCTA={false}>
+                <AddGame />
+              </AppLayout>
             }
           />
           <Route
             path="/games/:id"
             element={
-              <ProtectedRoute>
-                <AppLayout showPrimaryCTA={false}>
-                  <SpotDetails />
-                </AppLayout>
-              </ProtectedRoute>
+              <AppLayout showPrimaryCTA={false}>
+                <SpotDetails />
+              </AppLayout>
             }
           />
           <Route
@@ -111,7 +105,7 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <AppLayout>
-                  <Favourites />
+                <ComingSoon />
                 </AppLayout>
               </ProtectedRoute>
             }
@@ -165,7 +159,7 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <AppLayout showPrimaryCTA={false}>
-                  <Notifications />
+                <ComingSoon />
                 </AppLayout>
               </ProtectedRoute>
             }

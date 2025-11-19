@@ -4,9 +4,15 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { Spot } from "@/data/spots";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+type MapboxWithTelemetry = typeof mapboxgl & { setTelemetryEnabled?: (state: boolean) => void };
+const mapboxInstance = mapboxgl as MapboxWithTelemetry;
 
 if (MAPBOX_TOKEN) {
-  mapboxgl.accessToken = MAPBOX_TOKEN;
+  mapboxInstance.accessToken = MAPBOX_TOKEN;
+}
+
+if (typeof mapboxInstance.setTelemetryEnabled === "function") {
+  mapboxInstance.setTelemetryEnabled(false);
 }
 
 interface SpotMapProps {
@@ -173,5 +179,5 @@ export function SpotMap({
     );
   }
 
-  return <div ref={containerRef} className="h-full w-full rounded-l-xl" />;
+  return <div ref={containerRef} className="h-full w-full rounded-xl lg:rounded-l-xl" />;
 }

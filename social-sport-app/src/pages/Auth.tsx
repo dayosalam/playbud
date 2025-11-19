@@ -47,6 +47,8 @@ const Auth = () => {
     loadReferenceData();
   }, []);
 
+  const redirectPath = typeof (location.state as any)?.from === "string" ? (location.state as any).from : "/find-game";
+
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -62,7 +64,7 @@ const Auth = () => {
         title: "Welcome back!",
         description: "You've successfully logged in.",
       });
-      navigate("/find-game");
+      navigate(redirectPath, { replace: true });
     } catch (error: any) {
       toast({
         title: "Login failed",
@@ -109,7 +111,7 @@ const Auth = () => {
         title: "Account created!",
         description: "Welcome to PlayBud!",
       });
-      navigate("/find-game");
+      navigate(redirectPath, { replace: true });
     } catch (error: any) {
       toast({
         title: "Signup failed",

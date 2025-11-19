@@ -133,10 +133,11 @@ const formatTimeRange = (spot: Spot) => {
   const formatOpts: Intl.DateTimeFormatOptions = {
     hour: "numeric",
     minute: "2-digit",
+    hour12: true,
   };
 
-  const startText = start.toLocaleTimeString("en-GB", formatOpts);
-  const endText = end.toLocaleTimeString("en-GB", formatOpts);
+  const startText = start.toLocaleTimeString("en-US", formatOpts);
+  const endText = end.toLocaleTimeString("en-US", formatOpts);
 
   return `${startText} - ${endText}`;
 };
@@ -701,12 +702,19 @@ const FindGame = () => {
                   const capacityDisplay = capacity > 0 ? capacity : joinedCount;
 
                   return (
-                    <button
+                    <div
                       key={spot.id}
-                      type="button"
+                      role="button"
+                      tabIndex={0}
                       onMouseEnter={() => handleCardSelect(spot.id)}
                       onFocus={() => handleCardSelect(spot.id)}
                       onClick={() => handleViewDetails(spot)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          handleViewDetails(spot);
+                        }
+                      }}
                       className={cn(
                         "group relative flex w-full gap-4 rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition hover:border-primary/40 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40",
                         isActive && "border-primary/50 shadow-lg"
@@ -785,7 +793,7 @@ const FindGame = () => {
                           </div>
                         </div>
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
@@ -806,7 +814,10 @@ const FindGame = () => {
       </div>
 
       <Dialog open={isMapDialogOpen} onOpenChange={setIsMapDialogOpen}>
-        <DialogContent className="h-[92vh] max-w-full overflow-hidden rounded-none border-none bg-background p-0 sm:rounded-3xl sm:border sm:p-0 md:max-w-4xl">
+        <DialogContent
+          className="h-[92vh] max-w-full overflow-hidden rounded-none border-none bg-background p-0 sm:rounded-3xl sm:border sm:p-0 md:max-w-4xl"
+          aria-describedby={undefined}
+        >
           {/* <DialogHeader className="flex flex-row items-center justify-between border-b border-border px-6 py-4">
             <DialogTitle className="text-base font-semibold text-foreground">
               Nearby games map

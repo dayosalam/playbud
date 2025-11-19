@@ -48,7 +48,7 @@ const benefits = [
   {
     title: "Instant secure payments",
     description:
-      "No more chasing bank transfers – Playbud handles payments so you can focus on the session.",
+      "No more chasing bank transfers – PlayBud handles payments so you can focus on the session.",
     icon: BadgeCheck,
   },
   {
@@ -146,6 +146,7 @@ const AddGame = () => {
   const [isOrganiserModalOpen, setIsOrganiserModalOpen] = useState(false);
   const [isGuidanceOpen, setIsGuidanceOpen] = useState(false);
   const [isCreateGameOpen, setIsCreateGameOpen] = useState(false);
+  const [isAuthPromptOpen, setIsAuthPromptOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isGoodExampleOpen, setIsGoodExampleOpen] = useState(false);
   const [cityOptions, setCityOptions] = useState<Array<{ value: string; label: string }>>([]);
@@ -163,14 +164,15 @@ const AddGame = () => {
   const [isOrganizerCheckInFlight, setIsOrganizerCheckInFlight] = useState(false);
   const [isCreatingOrganizer, setIsCreatingOrganizer] = useState(false);
   const [gameForm, setGameForm] = useState<GameFormState>(() => ({ ...defaultGameForm }));
+  const [pendingOrganiserFlow, setPendingOrganiserFlow] = useState(false);
 
   const formattedSlug = useMemo(
     () => organiserForm.slug.trim().replace(/\s+/g, "-").toLowerCase(),
     [organiserForm.slug]
   );
 
-  const normalizeTime = (value?: string): string => {
-    if (!value) return "00:00:00";
+const normalizeTime = (value?: string): string => {
+  if (!value) return "00:00:00";
   
     try {
       // Handle "7:30", "07:30", "07:30:00", or "7:30 PM"
@@ -291,6 +293,12 @@ const AddGame = () => {
         title: "One moment",
         description: "Checking your organiser profile…",
       });
+      setPendingOrganiserFlow(true);
+      return;
+    }
+
+    if (!user?.id) {
+      setIsAuthPromptOpen(true);
       return;
     }
 
@@ -302,16 +310,33 @@ const AddGame = () => {
     setIsCreateGameOpen(true);
   };
 
-  const handleOrganiserContinue = async () => {
-    if (!user?.id) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in before hosting a game.",
-        variant: "destructive",
-      });
+  const formatTimeForDisplay = (value?: string): string => {
+    if (!value) return "--:--";
+    const date = new Date(`1970-01-01T${value}`);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  useEffect(() => {
+    if (!pendingOrganiserFlow || isOrganizerCheckInFlight) {
       return;
     }
+    setPendingOrganiserFlow(false);
+    if (organizerProfileIncomplete) {
+      setIsOrganiserModalOpen(true);
+    } else {
+      setIsCreateGameOpen(true);
+    }
+  }, [pendingOrganiserFlow, isOrganizerCheckInFlight, organizerProfileIncomplete]);
 
+  const handleOrganiserContinue = async () => {
+    if (!user?.id) {
     if (!organiserForm.sports.trim() || !organiserForm.slug.trim()) {
       toast({
         title: "Tell us more",
@@ -320,6 +345,7 @@ const AddGame = () => {
       });
       return;
     }
+  };
 
     const nextSlug = formattedSlug.replace(/[^a-z0-9-]/g, "");
     if (!nextSlug) {
@@ -416,6 +442,11 @@ const AddGame = () => {
     }
     setIsCreateGameOpen(false);
     setIsPreviewOpen(true);
+  };
+
+  const handleAuthRedirect = (path: string) => {
+    setIsAuthPromptOpen(false);
+    navigate(path, { state: { from: "/add-game" } });
   };
 
   const handleSubmitGame = async () => {
@@ -540,14 +571,14 @@ const AddGame = () => {
                 Get the best out of your sports game for you &amp; your community
               </h1>
               <p className="text-base text-muted-foreground">
-                Playbud makes it simple to host recurring sessions: publish in minutes, manage player lists and let us handle the admin.
+                PlayBud makes it simple to host recurring sessions: publish in minutes, manage player lists and let us handle the admin.
               </p>
               <div className="flex flex-wrap items-center gap-4">
                 <Button size="lg" className="rounded-full px-8" onClick={openOrganiserFlow}>
                   Add your game
                 </Button>
                 {/* <div className="flex flex-col text-xs text-muted-foreground">
-                  <span className="font-semibold text-foreground">Get Playbud on your phone. It’s free!</span>
+                  <span className="font-semibold text-foreground">Get PlayBud on your phone. It’s free!</span>
                   <div className="flex items-center gap-3 text-sm font-medium text-primary/80">
                     <span>App Store ⭐ 4.7</span>
                     <span>Google Play ⭐ 4.8</span>
@@ -567,7 +598,7 @@ const AddGame = () => {
         <section className="bg-background">
           <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-16 md:flex-row md:items-start md:justify-between">
             <div className="md:w-1/3">
-              <h2 className="text-3xl font-semibold text-foreground">Why Playbud?</h2>
+              <h2 className="text-3xl font-semibold text-foreground">Why PlayBud?</h2>
               <p className="mt-4 text-sm text-muted-foreground">
                 With a guided booking flow and tools built specifically for organisers, you stay in control while saving hours of admin every week.
               </p>
@@ -606,7 +637,7 @@ const AddGame = () => {
                 What organisers say
               </p>
               <p className="text-2xl font-semibold text-foreground">
-                Playbud is really easy to use. We run all of our sessions through it and love seeing who’s signed up before we get to the venue.”
+                PlayBud is really easy to use. We run all of our sessions through it and love seeing who’s signed up before we get to the venue.”
               </p>
               <div className="space-y-1 text-sm text-muted-foreground">
                 <p className="font-semibold text-foreground">Josh</p>
@@ -658,6 +689,29 @@ const AddGame = () => {
       
 
       {/* Modals */}
+      <Dialog open={isAuthPromptOpen} onOpenChange={setIsAuthPromptOpen}>
+        <DialogContent className="max-w-sm rounded-3xl text-center" aria-describedby={undefined}>
+          <DialogHeader className="text-center">
+            <DialogTitle className="text-2xl font-semibold text-foreground">Ready to host?</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Create an account or log in to add your first game and manage your organiser profile.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3">
+            <Button className="rounded-full" onClick={() => handleAuthRedirect("/auth")}>
+              Log in
+            </Button>
+            <Button
+              variant="outline"
+              className="rounded-full"
+              onClick={() => handleAuthRedirect("/auth?mode=signup")}
+            >
+              Sign up
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={isOrganiserModalOpen} onOpenChange={setIsOrganiserModalOpen}>
         <DialogContent className="max-w-lg rounded-3xl">
           <DialogHeader className="text-left">
@@ -726,11 +780,11 @@ const AddGame = () => {
           <div className="space-y-5 text-sm text-muted-foreground">
             <div className="space-y-2">
               <span className="text-lg">🏟️ Venue booking</span>
-              <p>Book the court or pitch directly with the venue first. Playbud doesn’t arrange venue rentals.</p>
+              <p>Book the court or pitch directly with the venue first. PlayBud doesn’t arrange venue rentals.</p>
             </div>
             <div className="space-y-2">
               <span className="text-lg">🤝 Exclusivity</span>
-              <p>Ask players to book via Playbud so the team sheet stays accurate and you can communicate easily.</p>
+              <p>Ask players to book via PlayBud so the team sheet stays accurate and you can communicate easily.</p>
             </div>
             <div className="space-y-2">
               <span className="text-lg">📸 Make it attractive</span>
@@ -749,7 +803,7 @@ const AddGame = () => {
       </Dialog>
 
       <Dialog open={isCreateGameOpen} onOpenChange={setIsCreateGameOpen}>
-        <DialogContent className="max-w-2xl rounded-3xl p-0">
+        <DialogContent className="max-w-2xl rounded-3xl p-0 max-h-[90vh] overflow-hidden">
           <DialogHeader className="border-b border-border px-6 py-4 text-left">
             <DialogTitle className="text-xl font-semibold text-foreground">
               Create game
@@ -758,7 +812,7 @@ const AddGame = () => {
               Provide details for the session you’d like to list.
             </DialogDescription>
           </DialogHeader>
-          <div className="max-h-[70vh] space-y-6 overflow-y-auto px-6 py-6">
+          <div className="max-h-[75vh] space-y-6 overflow-y-auto px-6 py-6">
             {/* <div className="flex items-center justify-between rounded-2xl bg-muted/40 p-4">
               <div className="flex flex-col gap-1">
                 <span className="text-sm font-semibold text-foreground">Is this a league or tournament?</span>
@@ -1004,7 +1058,7 @@ const AddGame = () => {
       </Dialog>
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-2xl rounded-3xl">
+        <DialogContent className="max-w-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="text-left">
             <DialogTitle className="text-2xl font-semibold text-foreground">Game preview</DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
@@ -1034,7 +1088,7 @@ const AddGame = () => {
               <div className="flex items-center gap-3">
                 <Clock className="h-4 w-4 text-primary" />
                 <span>
-                  {gameForm.startTime || "--:--"} – {gameForm.endTime || "--:--"}
+                  {formatTimeForDisplay(gameForm.startTime)} – {formatTimeForDisplay(gameForm.endTime)}
                 </span>
               </div>
               <div className="flex items-center gap-3 md:col-span-2">
@@ -1080,7 +1134,7 @@ const AddGame = () => {
       </Dialog>
 
       <Dialog open={isGoodExampleOpen} onOpenChange={setIsGoodExampleOpen}>
-        <DialogContent className="max-w-xl rounded-3xl">
+        <DialogContent className="max-w-xl rounded-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="text-left">
             <DialogTitle className="text-2xl font-semibold text-foreground">Good example</DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
@@ -1095,7 +1149,7 @@ const AddGame = () => {
             />
             <div className="space-y-2">
               <p className="text-lg font-semibold text-foreground">Casual / Social Volleyball</p>
-              <p>Hosted by Playbud · Mixed ability · Stratford</p>
+              <p>Hosted by PlayBud · Mixed ability · Stratford</p>
               <p>
                 “Join us for a relaxed session focused on rallying, improving together and cheering each other on. First-timers welcome!”
               </p>
@@ -1105,8 +1159,7 @@ const AddGame = () => {
       </Dialog>
       <AppFooter />
     </div>
-    </div>
-  
+  </div>
 );
 };
 
