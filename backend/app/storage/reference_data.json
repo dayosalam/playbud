@@ -81,6 +81,12 @@
       "code": "RUGBY"
     },
     {
+      "id": "sport-running",
+      "name": "Running/Jogging",
+      "slug": "Running/Jogging",
+      "code": "RUNNING/JOGGING"
+    },
+    {
       "id": "sport-social",
       "name": "Social",
       "slug": "social",

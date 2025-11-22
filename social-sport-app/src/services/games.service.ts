@@ -67,3 +67,10 @@ export function joinGame(id: string): Promise<GameResponse> {
     auth: true,
   });
 }
+
+export function getMyCreatedGames(): Promise<GameResponse[]> {
+  return apiRequest<GameResponse[]>("/games/me/created", {
+    method: "GET",
+    auth: true,
+  });
+}

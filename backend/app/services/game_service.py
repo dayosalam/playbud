@@ -44,6 +44,16 @@ def _get_game_owner_user(game: Game):
     return user_record
 
 
+def list_user_created_games(user: UserBase, limit: int = 500) -> list[Game]:
+    organiser_id = getattr(user, "organiser_id", None)
+    games = game_repository.list_games(limit=limit)
+    return [
+        game
+        for game in games
+        if game.created_by_user_id == user.id or (organiser_id and game.organiser_id == organiser_id)
+    ]
+
+
 def update_game_status(game_id: str, status: str) -> Game | None:
     updated = game_repository.update_game_status(game_id, status)
     if not updated:

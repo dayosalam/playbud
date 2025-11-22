@@ -163,6 +163,7 @@ const FindGame = () => {
   const [genderOptions, setGenderOptions] = useState<SelectOption[]>(toGenderOptions([]));
   const [isReferenceLoading, setIsReferenceLoading] = useState(false);
   const [defaultCity, setDefaultCity] = useState<string>("");
+  const paramsInitializedRef = useRef(false);
 
   const loadGames = useCallback(async () => {
     setIsGamesLoading(true);
@@ -294,39 +295,61 @@ const FindGame = () => {
     loadGames();
   }, [loadGames]);
 
+  // Initialize filters from URL params once reference data is ready
   useEffect(() => {
-    const sportParam = searchParams.get("sport");
-    const normalizedSport = sportParam ? sportParam.toUpperCase() : "all";
-    setFilters((prev) => {
-      if (!sportParam && prev.sport === "all") {
-        return prev;
-      }
-      if (sportParam && prev.sport === normalizedSport) {
-        return prev;
-      }
-      return {
-        ...prev,
-        sport: sportParam ? normalizedSport : "all",
-      };
-    });
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (!cityOptions.length) {
+    if (!cityOptions.length || paramsInitializedRef.current) {
       return;
     }
-    const firstValue = cityOptions[0].value;
-    setDefaultCity(firstValue);
-    setFilters((prev) => {
-      if (prev.city && cityOptions.some((option) => option.value === prev.city)) {
-        return prev;
-      }
-      return {
-        ...prev,
-        city: firstValue,
-      };
-    });
-  }, [cityOptions]);
+
+    const nextFilters: Filters = { ...INITIAL_FILTERS };
+
+    const cityParam = searchParams.get("city");
+    const sportParam = searchParams.get("sport");
+    const abilityParam = searchParams.get("ability");
+    const genderParam = searchParams.get("gender");
+    const dateParam = searchParams.get("date") as DateFilter | null;
+    const fullParam = searchParams.get("full");
+
+    const cityMatch = cityOptions.find((opt) => opt.value === cityParam);
+    nextFilters.city = cityMatch ? cityMatch.value : cityOptions[0].value;
+    setDefaultCity(nextFilters.city);
+
+    const sportMatch = sportOptions.find(
+      (opt) => opt.value.toUpperCase() === (sportParam ?? "").toUpperCase(),
+    );
+    nextFilters.sport = sportMatch ? sportMatch.value : "all";
+
+    const abilityMatch = abilityOptions.find((opt) => opt.value === abilityParam);
+    nextFilters.ability = abilityMatch ? abilityMatch.value : "all";
+
+    const genderMatch = genderOptions.find((opt) => opt.value === genderParam);
+    nextFilters.gender = genderMatch ? genderMatch.value : "all";
+
+    nextFilters.date = dateParam && ["any", "today", "week", "now"].includes(dateParam)
+      ? dateParam
+      : "any";
+
+    nextFilters.showFullGames = fullParam === "1" || fullParam === "true";
+
+    setFilters(nextFilters);
+    paramsInitializedRef.current = true;
+  }, [cityOptions, sportOptions, abilityOptions, genderOptions, searchParams]);
+
+  // Keep URL params in sync with current filters
+  useEffect(() => {
+    if (!paramsInitializedRef.current) return;
+    const next = new URLSearchParams();
+    if (filters.city) next.set("city", filters.city);
+    if (filters.sport !== "all") next.set("sport", filters.sport);
+    if (filters.ability !== "all") next.set("ability", filters.ability);
+    if (filters.gender !== "all") next.set("gender", filters.gender);
+    if (filters.date !== "any") next.set("date", filters.date);
+    if (filters.showFullGames) next.set("full", "1");
+
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true });
+    }
+  }, [filters, searchParams, setSearchParams]);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -336,6 +359,7 @@ const FindGame = () => {
 
   const filteredSpots = useMemo(() => {
     const now = new Date();
+    const cutoff = new Date(now.getTime() + 60 * 60 * 1000); // hide games starting within the next hour
     const startOfToday = new Date(now);
     startOfToday.setHours(0, 0, 0, 0);
     const endOfToday = new Date(startOfToday);
@@ -377,7 +401,7 @@ const FindGame = () => {
       const start = new Date(spot.startTime);
       const end = new Date(spot.endTime);
 
-      if (start <= now) {
+      if (start <= cutoff) {
         return false;
       }
 
