@@ -1,6 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
-from pydantic.v1 import BaseSettings, Field, ValidationError
+from pydantic.v1 import BaseSettings, Field, ValidationError, EmailStr
 
 from dotenv import load_dotenv
 
@@ -26,6 +26,13 @@ class Settings(BaseSettings):
     jwt_access_token_expires_minutes: int = 60
     jwt_refresh_token_expires_minutes: int = 60 * 24 * 7
 
+    smtp_host: str = Field("", env="SMTP_HOST")
+    smtp_port: int = Field(587, env="SMTP_PORT")
+    smtp_username: str = Field("", env="SMTP_USERNAME")
+    smtp_password: str = Field("", env="SMTP_PASSWORD")
+    password_reset_url: str = Field("https://playbud.site/reset-password", env="PASSWORD_RESET_URL")
+    mail_from: EmailStr = Field("ballerz@playbud.site", env="MAIL_FROM")
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
@@ -45,6 +52,7 @@ def get_settings() -> Settings:
     print(f"✅ Supabase URL: {s.supabase_url}")
     print(f"✅ Service Role Key: {s.supabase_service_role_key[:6]}********" if s.supabase_service_role_key else "❌ Service Role Key: MISSING")
     print(f"✅ JWT Access Secret: {s.jwt_secret_key[:6]}********")
+    print(f"✅ STMP Secret: {s.smtp_password[6:]}********")
     return s
 
 
