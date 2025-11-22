@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { fetchReferenceData } from "@/services/reference.service";
 import { getMyGames, type GameWithBooking } from "@/services/bookings.service";
+import { getMyCreatedGames, type GameResponse } from "@/services/games.service";
 import brandIcon from "@/assets/icon.png";
 
 interface User {
@@ -163,12 +164,17 @@ const Profile = () => {
     const loadGames = async () => {
       setIsGamesLoading(true);
       try {
-        const response = await getMyGames();
+        const [bookedGames, createdGames] = await Promise.all([
+          getMyGames(),
+          getMyCreatedGames(),
+        ]);
+
         const now = new Date();
         const upcoming: FormattedGame[] = [];
         const previous: FormattedGame[] = [];
+        const seenIds = new Set<string>();
 
-        response.forEach(({ game }) => {
+        const formatGame = (game: GameResponse | GameWithBooking["game"]): FormattedGame => {
           const start = combineDateAndTime(game.date, game.start_time);
           const end = combineDateAndTime(game.date, game.end_time);
           const dateLabel = start.toLocaleDateString("en-GB", {
@@ -196,7 +202,7 @@ const Profile = () => {
             statusLabel = "Confirmed";
           }
 
-          const formatted: FormattedGame = {
+          return {
             id: game.id,
             title: game.name,
             dateLabel,
@@ -206,8 +212,13 @@ const Profile = () => {
             status,
             statusLabel,
           };
+        };
 
-          if (status === "completed" || status === "unapproved") {
+        [...createdGames, ...bookedGames.map((entry) => entry.game)].forEach((game) => {
+          if (seenIds.has(game.id)) return;
+          seenIds.add(game.id);
+          const formatted = formatGame(game);
+          if (formatted.status === "completed" || formatted.status === "unapproved") {
             previous.push(formatted);
           } else {
             upcoming.push(formatted);

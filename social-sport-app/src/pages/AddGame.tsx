@@ -173,25 +173,34 @@ const AddGame = () => {
 
 const normalizeTime = (value?: string): string => {
   if (!value) return "00:00:00";
-  
-    try {
-      // Handle "7:30", "07:30", "07:30:00", or "7:30 PM"
-      const date = new Date(`1970-01-01T${value}`);
-      if (isNaN(date.getTime())) {
-        // fallback: try parsing manually
-        const [hours, minutes, seconds = "00"] = value.split(":");
-        const h = hours.padStart(2, "0");
-        const m = minutes?.padStart(2, "0") || "00";
-        const s = seconds.padStart(2, "0");
-        return `${h}:${m}:${s}`;
-      }
-  
-      // Always output in HH:mm:ss
-      return date.toISOString().substring(11, 19);
-    } catch {
-      return "00:00:00";
-    }
-  };
+
+  const trimmed = value.trim();
+  if (!trimmed) return "00:00:00";
+
+  // Support simple "7:30", "07:30", "07:30:00" and "7:30 PM" without timezone shifts.
+  const ampmMatch = trimmed.match(/^(\d{1,2})(?::(\d{2}))?(?::(\d{2}))?\s*(am|pm)$/i);
+  if (ampmMatch) {
+    let hours = parseInt(ampmMatch[1] ?? "0", 10);
+    const minutes = parseInt(ampmMatch[2] ?? "0", 10);
+    const seconds = parseInt(ampmMatch[3] ?? "0", 10);
+    const meridiem = ampmMatch[4]?.toLowerCase();
+    if (meridiem === "pm" && hours < 12) hours += 12;
+    if (meridiem === "am" && hours === 12) hours = 0;
+    const h = String(Math.max(0, Math.min(23, hours))).padStart(2, "0");
+    const m = String(Math.max(0, Math.min(59, minutes))).padStart(2, "0");
+    const s = String(Math.max(0, Math.min(59, seconds))).padStart(2, "0");
+    return `${h}:${m}:${s}`;
+  }
+
+  const parts = trimmed.split(":");
+  const hours = parseInt(parts[0] ?? "0", 10);
+  const minutes = parseInt(parts[1] ?? "0", 10);
+  const seconds = parseInt(parts[2] ?? "0", 10);
+  const h = String(Number.isFinite(hours) ? Math.max(0, Math.min(23, hours)) : 0).padStart(2, "0");
+  const m = String(Number.isFinite(minutes) ? Math.max(0, Math.min(59, minutes)) : 0).padStart(2, "0");
+  const s = String(Number.isFinite(seconds) ? Math.max(0, Math.min(59, seconds)) : 0).padStart(2, "0");
+  return `${h}:${m}:${s}`;
+};
   
 
   useEffect(() => {
@@ -515,7 +524,8 @@ const normalizeTime = (value?: string): string => {
         venue: gameForm.venue.trim(),
         city_slug: gameForm.city,
         sport_code: gameForm.sport,
-        date: new Date(`${gameForm.date}T00:00:00`).toISOString(),
+        // Keep dates aligned to the entered calendar day (avoid local TZ offset shifting to previous day)
+        date: new Date(`${gameForm.date}T00:00:00Z`).toISOString(),
         start_time: normalizeTime(gameForm.startTime),
         end_time: normalizeTime(gameForm.endTime),
         skill: gameForm.skill,

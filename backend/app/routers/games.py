@@ -24,3 +24,8 @@ def get_game(game_id: str) -> Game:
     if not game:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Game not found")
     return game
+
+
+@router.get("/me/created", response_model=list[Game])
+def list_my_created_games(current_user: UserBase = Depends(_get_current_user)) -> list[Game]:
+    return game_service.list_user_created_games(current_user)

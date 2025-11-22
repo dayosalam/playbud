@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     api_version: str = "0.1.0"
 
     cors_origins: list[str] = Field(
-        default_factory=lambda: ["http://localhost:5173", "http://127.0.0.1:5173"],
+        default_factory=lambda: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8080",],
         env="CORS_ORIGINS"
     )
     admin_emails_raw: str = Field("", env="ADMIN_EMAILS")
