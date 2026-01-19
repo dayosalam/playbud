@@ -35,3 +35,21 @@ class TokenResponse(BaseModel):
 
 class PasswordResetRequest(BaseModel):
     email: EmailStr
+
+
+class EmailCheckRequest(BaseModel):
+    email: EmailStr
+
+
+class SignupInviteRequest(BaseModel):
+    email: EmailStr
+
+
+class VerificationEmailRequest(BaseModel):
+    email: EmailStr
+    token: str
+
+
+class WhatsappTokenRequest(BaseModel):
+    email: EmailStr
+    secret: str
