@@ -9,6 +9,7 @@ from . import (
     organizer_repository,
     user_repository,
 )
+from ..core.config import admin_email_set, get_settings
 
 
 def create_game(payload: GameCreate, user: UserBase) -> Game:
@@ -17,6 +18,8 @@ def create_game(payload: GameCreate, user: UserBase) -> Game:
     if payload.organiser_id:
         organizer_service.link_game_to_organizer(payload.organiser_id, game.id)
     email_service.send_game_pending_review_email(game=game, organiser_name=user.name, organiser_email=user.email)
+    admins = list(admin_email_set(get_settings()))
+    email_service.send_game_pending_review_to_admins(game=game, organiser_name=user.name, admin_emails=admins)
     return game
 
 

@@ -31,7 +31,9 @@ class Settings(BaseSettings):
     smtp_username: str = Field("", env="SMTP_USERNAME")
     smtp_password: str = Field("", env="SMTP_PASSWORD")
     password_reset_url: str = Field("https://playbud.site/reset-password", env="PASSWORD_RESET_URL")
+    signup_url: str = Field("https://playbud.site/auth?mode=signup", env="SIGNUP_URL")
     mail_from: EmailStr = Field("ballerz@playbud.site", env="MAIL_FROM")
+    whatsapp_bot_secret: str = Field("", env="WHATSAPP_BOT_SECRET")
 
     class Config:
         env_file = ".env"

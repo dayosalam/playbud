@@ -35,6 +35,7 @@ def _can_send() -> bool:
 
 def _send_email(*, subject: str, recipient: str, text_body: str, html_body: str) -> bool:
     if not _can_send():
+        print(f"Email send skipped (missing SMTP config): {subject} -> {recipient}")
         return False
 
     message = EmailMessage()
@@ -48,6 +49,7 @@ def _send_email(*, subject: str, recipient: str, text_body: str, html_body: str)
         with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port) as server:
             server.login(settings.smtp_username, settings.smtp_password)
             server.send_message(message)
+        print(f"Email sent: {subject} -> {recipient}")
         return True
     except Exception as exc:  # noqa: BLE001
         print(f"Email send failure ({subject}): {exc}")
@@ -153,6 +155,48 @@ def send_organizer_review_email(*, recipient: str, name: str | None = None) -> b
     )
 
 
+def send_whatsapp_verification_email(*, recipient: str, token: str) -> bool:
+    text_body = (
+        "Your PlayBud WhatsApp verification code is below:\n\n"
+        f"{token}\n\n"
+        "Enter this code in WhatsApp to continue."
+    )
+    html_body = _hero_html(
+        "Verify your WhatsApp login",
+        f"Use this code to continue in WhatsApp:<br/><strong style=\"font-size:24px;letter-spacing:4px;\">{token}</strong>",
+        "Open PlayBud",
+        "https://playbud.site",
+        footer="If you didn't request this, you can ignore this email.",
+    )
+    return _send_email(
+        subject="PlayBud WhatsApp verification code",
+        recipient=recipient,
+        text_body=text_body,
+        html_body=html_body,
+    )
+
+
+def send_whatsapp_signup_email(*, recipient: str, link: str) -> bool:
+    text_body = (
+        "You're almost there!\n\n"
+        "To continue in WhatsApp, please create your PlayBud account using the link below:\n"
+        f"{link}\n\n"
+        "Once you're done, return to WhatsApp and reply 'done'."
+    )
+    html_body = _hero_html(
+        "Finish your PlayBud signup",
+        "Create your PlayBud account to keep using the WhatsApp bot. Once you're done, come back and reply 'done'.",
+        "Create account",
+        link,
+    )
+    return _send_email(
+        subject="Finish your PlayBud signup",
+        recipient=recipient,
+        text_body=text_body,
+        html_body=html_body,
+    )
+
+
 def send_game_pending_review_email(*, game: Game, organiser_name: str | None, organiser_email: str) -> bool:
     event_dt = _event_datetime(game)
     text_body = (
@@ -172,6 +216,32 @@ def send_game_pending_review_email(*, game: Game, organiser_name: str | None, or
         text_body=text_body,
         html_body=html_body,
     )
+
+
+def send_game_pending_review_to_admins(*, game: Game, organiser_name: str | None, admin_emails: list[str]) -> None:
+    if not admin_emails:
+        return
+    event_dt = _event_datetime(game)
+    text_body = (
+        f"A new game was submitted by {organiser_name or 'an organiser'}.\n\n"
+        f"Title: \"{game.name}\"\n"
+        f"Time: {event_dt:%A, %d %B %Y at %H:%M}\n"
+        f"City: {game.city_slug}\n"
+        f"Sport: {game.sport_code}"
+    )
+    html_body = _hero_html(
+        "New game awaiting review",
+        f"{organiser_name or 'An organiser'} submitted <strong>{game.name}</strong> for {event_dt:%A, %d %B %Y at %H:%M}.",
+        "Open admin panel",
+        "https://playbud.site/admin/games",
+    )
+    for admin_email in admin_emails:
+        _send_email(
+          subject="New game pending approval",
+          recipient=admin_email,
+          text_body=text_body,
+          html_body=html_body,
+        )
 
 
 def send_game_approved_email(*, game: Game, organiser_name: str | None, organiser_email: str) -> bool:
