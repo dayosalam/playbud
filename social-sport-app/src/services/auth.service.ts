@@ -59,6 +59,23 @@ export async function login(payload: { email: string; password: string }): Promi
   return mapUser(response.user);
 }
 
+export async function loginWithGoogle(payload: {
+  idToken: string;
+  preferredCity?: string | null;
+  heardAbout?: string | null;
+}): Promise<AuthUser> {
+  const response = await apiRequest<AuthResponse>("/auth/google", {
+    method: "POST",
+    body: JSON.stringify({
+      id_token: payload.idToken,
+      preferred_city: payload.preferredCity ?? null,
+      heard_about: payload.heardAbout ?? null,
+    }),
+  });
+  setStoredTokens(response.access_token, response.refresh_token);
+  return mapUser(response.user);
+}
+
 export async function getCurrentUser(): Promise<AuthUser> {
   const user = await apiRequest<AuthResponse["user"]>("/auth/me", { auth: true });
   return mapUser(user);

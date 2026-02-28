@@ -1,8 +1,11 @@
 from fastapi import HTTPException, status
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_requests
+from uuid import uuid4
 
 from ..core import security
 from ..core.config import get_settings
-from ..schemas.auth import PasswordResetRequest, UserCreate, UserLogin, TokenResponse, UserBase
+from ..schemas.auth import PasswordResetRequest, UserCreate, UserLogin, TokenResponse, UserBase, GoogleAuthRequest
 from . import user_repository, email_service
 
 settings = get_settings()
@@ -65,6 +68,70 @@ def login(payload: UserLogin) -> TokenResponse:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
+
+    access_token = security.create_access_token(record.id)
+    refresh_token = security.create_refresh_token(record.id)
+
+    return TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        user=_user_to_response(record),
+    )
+
+
+def _verify_google_id_token(id_token: str) -> dict:
+    if not settings.google_client_id:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Google login is not configured.",
+        )
+    try:
+        return google_id_token.verify_oauth2_token(
+            id_token,
+            google_requests.Request(),
+            settings.google_client_id,
+        )
+    except Exception:  # noqa: BLE001
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Google token",
+        ) from None
+
+
+def login_with_google(payload: GoogleAuthRequest) -> TokenResponse:
+    claims = _verify_google_id_token(payload.id_token)
+    email = claims.get("email")
+    if not email or not claims.get("email_verified", False):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Google email is not verified",
+        )
+
+    name = claims.get("name") or email.split("@")[0]
+    avatar_url = claims.get("picture")
+
+    record = user_repository.get_user_by_email(email)
+    if not record:
+        record = user_repository.create_user(
+            email=email,
+            password_hash=security.hash_password(str(uuid4())),
+            name=name,
+            avatar_url=avatar_url,
+            preferred_city=payload.preferred_city,
+            heard_about=payload.heard_about,
+        )
+    else:
+        updates = {}
+        if name and not record.name:
+            updates["name"] = name
+        if avatar_url and not record.avatar_url:
+            updates["avatar_url"] = avatar_url
+        if payload.preferred_city and not record.preferred_city:
+            updates["preferred_city"] = payload.preferred_city
+        if payload.heard_about and not record.heard_about:
+            updates["heard_about"] = payload.heard_about
+        if updates:
+            record = user_repository.update_user_fields(record.id, updates)
 
     access_token = security.create_access_token(record.id)
     refresh_token = security.create_refresh_token(record.id)

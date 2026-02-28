@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +7,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import signupHero from "@/assets/signup-hero.png";
 import { AppFooter } from "@/components/AppFooter";
-import { login as apiLogin, signup as apiSignup } from "@/services/auth.service";
+import { login as apiLogin, signup as apiSignup, loginWithGoogle } from "@/services/auth.service";
 import { fetchReferenceData } from "@/services/reference.service";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -21,6 +21,8 @@ const Auth = () => {
   const [heardAbout, setHeardAbout] = useState("");
   const [cityOptions, setCityOptions] = useState<Array<{ value: string; label: string }>>([]);
   const { refreshUser } = useAuth();
+  const googleButtonRef = useRef<HTMLDivElement | null>(null);
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 
   // Listen for URL parameter changes
   useEffect(() => {
@@ -125,6 +127,96 @@ const Auth = () => {
   const handleForgotPassword = () => {
     navigate("/forgot-password");
   };
+
+  const handleGoogleCredential = useCallback(
+    async (response: GoogleCredentialResponse) => {
+      if (!response?.credential) {
+        toast({
+          title: "Google login failed",
+          description: "We couldn't verify your Google account.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (isSignup && !heardAbout) {
+        toast({
+          title: "Tell us more",
+          description: "Please let us know how you heard about PlayBud.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        await loginWithGoogle({
+          idToken: response.credential,
+          preferredCity: preferredCity || null,
+          heardAbout: heardAbout || null,
+        });
+        await refreshUser();
+        toast({
+          title: isSignup ? "Account created!" : "Welcome back!",
+          description: isSignup ? "Welcome to PlayBud!" : "You've successfully logged in.",
+        });
+        navigate(redirectPath, { replace: true });
+      } catch (error: any) {
+        toast({
+          title: "Google login failed",
+          description: error?.message || "Unable to sign you in right now.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [heardAbout, isSignup, navigate, preferredCity, redirectPath, refreshUser]
+  );
+
+  useEffect(() => {
+    if (!googleButtonRef.current) return;
+    if (!googleClientId) return;
+
+    let cancelled = false;
+
+    const tryInit = () => {
+      if (!window.google?.accounts?.id || !googleButtonRef.current) return false;
+      if (cancelled) return true;
+
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: handleGoogleCredential,
+      });
+
+      googleButtonRef.current.innerHTML = "";
+      window.google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: "outline",
+        size: "large",
+        width: "100%",
+        text: isSignup ? "signup_with" : "signin_with",
+        shape: "pill",
+      });
+      return true;
+    };
+
+    if (tryInit()) {
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const interval = window.setInterval(() => {
+      if (tryInit()) {
+        window.clearInterval(interval);
+      }
+    }, 200);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [googleClientId, handleGoogleCredential, isSignup]);
   
 
   if (isSignup) {
@@ -136,6 +228,20 @@ const Auth = () => {
           <div className="w-full max-w-md space-y-8">
             <div>
               <h1 className="text-3xl font-bold">Create Account</h1>
+            </div>
+
+            <div className="space-y-3">
+              <div ref={googleButtonRef} />
+              {!googleClientId ? (
+                <p className="text-xs text-muted-foreground">
+                  Google login is not configured yet.
+                </p>
+              ) : null}
+              <div className="flex items-center gap-3 text-xs uppercase text-muted-foreground">
+                <span className="h-px flex-1 bg-border" />
+                or
+                <span className="h-px flex-1 bg-border" />
+              </div>
             </div>
 
             <form onSubmit={handleSignup} className="space-y-6">
@@ -271,6 +377,20 @@ const Auth = () => {
             <div>
               <h1 className="text-3xl font-bold">Welcome Back</h1>
               <p className="text-muted-foreground mt-2">Sign in to continue to PlayBud</p>
+            </div>
+
+            <div className="space-y-3">
+              <div ref={googleButtonRef} />
+              {!googleClientId ? (
+                <p className="text-xs text-muted-foreground">
+                  Google login is not configured yet.
+                </p>
+              ) : null}
+              <div className="flex items-center gap-3 text-xs uppercase text-muted-foreground">
+                <span className="h-px flex-1 bg-border" />
+                or
+                <span className="h-px flex-1 bg-border" />
+              </div>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-6">

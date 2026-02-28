@@ -29,3 +29,6 @@ coverage/
 
 # Docker
 *.local
+client_secret_*.json
+client_secret_*.json
+.env

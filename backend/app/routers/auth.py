@@ -11,6 +11,7 @@ from ..schemas.auth import (
     SignupInviteRequest,
     VerificationEmailRequest,
     WhatsappTokenRequest,
+    GoogleAuthRequest,
 )
 from ..services import auth_service, user_repository, email_service
 from ..core import security
@@ -32,6 +33,11 @@ async def signup(payload: UserCreate) -> TokenResponse:
 @router.post("/login", response_model=TokenResponse)
 async def login(payload: UserLogin) -> TokenResponse:
     return auth_service.login(payload)
+
+
+@router.post("/google", response_model=TokenResponse)
+async def google_login(payload: GoogleAuthRequest) -> TokenResponse:
+    return auth_service.login_with_google(payload)
 
 
 def _get_current_user(token: str = Depends(oauth2_scheme)) -> UserBase:

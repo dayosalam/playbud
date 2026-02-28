@@ -53,3 +53,9 @@ class VerificationEmailRequest(BaseModel):
 class WhatsappTokenRequest(BaseModel):
     email: EmailStr
     secret: str
+
+
+class GoogleAuthRequest(BaseModel):
+    id_token: str
+    preferred_city: str | None = None
+    heard_about: str | None = None
