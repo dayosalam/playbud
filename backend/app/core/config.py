@@ -4,7 +4,7 @@ from pydantic.v1 import BaseSettings, Field, ValidationError, EmailStr
 
 from dotenv import load_dotenv
 
-ENV_PATH = Path("/Users/dayosalam/Documents/codes/playbud/backend/.env")
+ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
 load_dotenv(dotenv_path=ENV_PATH, override=True)  # force using file values
 
 
@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     api_version: str = "0.1.0"
 
     cors_origins: list[str] = Field(
-        default_factory=lambda: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8080",],
+        default_factory=list,
         env="CORS_ORIGINS"
     )
     admin_emails_raw: str = Field("", env="ADMIN_EMAILS")
