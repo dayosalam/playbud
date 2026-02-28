@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     jwt_access_token_expires_minutes: int = 60
     jwt_refresh_token_expires_minutes: int = 60 * 24 * 7
 
+    google_client_id: str = Field("", env="GOOGLE_CLIENT_ID")
+
     smtp_host: str = Field("", env="SMTP_HOST")
     smtp_port: int = Field(587, env="SMTP_PORT")
     smtp_username: str = Field("", env="SMTP_USERNAME")

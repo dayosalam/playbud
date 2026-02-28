@@ -90,6 +90,7 @@ def create_user(
     email: str,
     password_hash: str,
     name: str,
+    avatar_url: str | None = None,
     preferred_city: str | None = None,
     heard_about: str | None = None,
 ) -> UserRecord:
@@ -100,6 +101,7 @@ def create_user(
         email=email,
         name=name,
         password_hash=password_hash,
+        avatar_url=avatar_url,
         organiser_id=organiser_id,
         preferred_city=preferred_city,
         heard_about=heard_about,
@@ -122,6 +124,32 @@ def create_user(
     except APIError as exc:
         raise RuntimeError(f"Failed to create user: {exc.message}") from exc
     return record
+
+
+def update_user_fields(user_id: str, fields: dict) -> UserRecord:
+    if not fields:
+        record = get_user_by_id(user_id)
+        if not record:
+            raise RuntimeError("User not found")
+        return record
+
+    client = _client()
+    try:
+        response = (
+            client.table(USERS_TABLE)
+            .update(fields)
+            .eq("id", user_id)
+            .execute()
+        )
+    except APIError as exc:
+        raise RuntimeError(f"Failed to update user: {exc.message}") from exc
+    data = response.data or []
+    if not data:
+        record = get_user_by_id(user_id)
+        if not record:
+            raise RuntimeError("User not found")
+        return record
+    return _parse_user(data[0])
 
 
 def list_users() -> List[UserRecord]:
