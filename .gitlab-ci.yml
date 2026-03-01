@@ -21,6 +21,7 @@ test_all:
     - backend/.venv/bin/pip install -r backend/requirements.txt
     - cd social-sport-app && npm ci
     - cd "$CI_PROJECT_DIR"
+    
   script:
     - make test
   rules:
@@ -48,12 +49,23 @@ build_images:
 
 deploy_prod:
   stage: deploy
+  image: alpine:3.20
   tags:
     - deploy
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
   script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    - export IMAGE_TAG="$IMAGE_TAG"
-    - docker compose -f docker-compose.prod.yml pull
-    - docker compose -f docker-compose.prod.yml up -d
+    - |
+      ssh dayo@72.62.41.159 "
+        set -e
+        docker login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'
+        cd '$DEPLOY_PATH'
+        IMAGE_TAG='$IMAGE_TAG' docker compose -f docker-compose.prod.yml pull
+        IMAGE_TAG='$IMAGE_TAG' docker compose -f docker-compose.prod.yml up -d
+      "
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
