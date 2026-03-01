@@ -1,0 +1,78 @@
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  DOCKER_TLS_CERTDIR: "/certs"
+  IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
+
+test_all:
+  stage: test
+  image: python:3.10-slim
+  cache:
+    paths:
+      - backend/.venv
+      - social-sport-app/node_modules
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends make nodejs npm
+    - python -m venv backend/.venv
+    - backend/.venv/bin/pip install --upgrade pip
+    - backend/.venv/bin/pip install -r backend/requirements.txt
+    - cd social-sport-app && npm ci
+    - cd "$CI_PROJECT_DIR"
+    
+  script:
+    - make test
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+build_images:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - docker build -f backend/Dockerfile -t "$CI_REGISTRY_IMAGE/backend:$IMAGE_TAG" -t "$CI_REGISTRY_IMAGE/backend:latest" .
+    - docker build -f social-sport-app/Dockerfile
+      --build-arg VITE_GOOGLE_CLIENT_ID="$VITE_GOOGLE_CLIENT_ID"
+      --build-arg VITE_API_BASE_URL="$VITE_API_BASE_URL"
+      -t "$CI_REGISTRY_IMAGE/frontend:$IMAGE_TAG" -t "$CI_REGISTRY_IMAGE/frontend:latest" .
+    - docker push "$CI_REGISTRY_IMAGE/backend:$IMAGE_TAG"
+    - docker push "$CI_REGISTRY_IMAGE/backend:latest"
+    - docker push "$CI_REGISTRY_IMAGE/frontend:$IMAGE_TAG"
+    - docker push "$CI_REGISTRY_IMAGE/frontend:latest"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+deploy_prod:
+  stage: deploy
+  tags: [deploy]
+  before_script:
+  #   - command -v ssh >/dev/null || (sudo apt-get update -y && sudo apt-get install -y openssh-client)
+  #   - mkdir -p ~/.ssh
+    # - chmod 700 ~/.ssh
+    - chmod 400 $SSH_KEY
+
+  #   # SSH_KEY is a File variable -> it's already a path to a temp file
+  #   - cp "$SSH_KEY" ~/.ssh/id_ed25519
+  #   - chmod 600 ~/.ssh/id_ed25519
+
+  #   # Trust the host properly (avoid StrictHostKeyChecking=no)
+  #   - ssh-keyscan -H 72.62.41.159 >> ~/.ssh/known_hosts
+
+  #   # quick sanity check
+  #   - ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes -o BatchMode=yes dayo@72.62.41.159 "echo SSH_OK"
+  script:
+    - |
+      ssh -o StrictHostKeyChecking=no -i $SSH_KEY dayo@72.62.41.159 "
+        set -e
+        docker login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'
+        cd '$DEPLOY_PATH'
+        IMAGE_TAG='$IMAGE_TAG' docker compose -f docker-compose.prod.yml pull
+        IMAGE_TAG='$IMAGE_TAG' docker compose -f docker-compose.prod.yml up -d
+      "
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

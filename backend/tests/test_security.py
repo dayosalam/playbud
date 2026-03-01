@@ -1,3 +1,4 @@
+
 import sys
 from pathlib import Path
 
@@ -6,6 +7,7 @@ if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
 from app.core import security
+
 
 
 def test_password_hash_roundtrip():
