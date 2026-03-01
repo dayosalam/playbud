@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 
 import httpx
+import pytest
 
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
 if str(BACKEND_ROOT) not in sys.path:
@@ -10,9 +11,10 @@ if str(BACKEND_ROOT) not in sys.path:
 from app.main import app
 
 
-def test_health_check():
+@pytest.mark.anyio
+async def test_health_check():
     transport = httpx.ASGITransport(app=app)
-    with httpx.Client(transport=transport, base_url="http://test") as client:
-        response = client.get("/health")
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get("/health")
         assert response.status_code == 200
         assert response.json() == {"status": "ok"}
