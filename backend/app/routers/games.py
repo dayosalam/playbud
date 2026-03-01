@@ -8,12 +8,12 @@ from .auth import _get_current_user
 router = APIRouter()
 
 
-@router.post("/", response_model=Game, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=Game, status_code=status.HTTP_201_CREATED)
 def create_game(payload: GameCreate, current_user: UserBase = Depends(_get_current_user)) -> Game:
     return game_service.create_game(payload, current_user)
 
 
-@router.get("/", response_model=list[Game])
+@router.get("", response_model=list[Game])
 def list_games(limit: int = 50) -> list[Game]:
     return game_service.list_recent_games(limit=limit)
 
