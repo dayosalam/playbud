@@ -1,10 +1,30 @@
 stages:
+  - test
   - build
   - deploy
 
 variables:
   DOCKER_TLS_CERTDIR: "/certs"
   IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
+
+test_all:
+  stage: test
+  image: python:3.10-slim
+  cache:
+    paths:
+      - backend/.venv
+      - social-sport-app/node_modules
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends nodejs npm
+    - python -m venv backend/.venv
+    - backend/.venv/bin/pip install --upgrade pip
+    - backend/.venv/bin/pip install -r backend/requirements.txt
+    - cd social-sport-app && npm ci
+  script:
+    - backend/.venv/bin/pytest -q
+    - cd social-sport-app && npm test
+  rules:
+    - if: $CI_COMMIT_BRANCH
 
 build_images:
   stage: build
