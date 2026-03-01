@@ -8,7 +8,7 @@ from .auth import _get_current_user
 router = APIRouter()
 
 
-@router.post("/", response_model=Organizer, status_code=status.HTTP_200_OK)
+@router.post("", response_model=Organizer, status_code=status.HTTP_200_OK)
 def create_organizer(payload: OrganizerCreate, current_user: UserBase = Depends(_get_current_user)) -> Organizer:
     if payload.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot create organizer for another user")
