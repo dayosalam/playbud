@@ -50,10 +50,11 @@ build_images:
 deploy_prod:
   stage: deploy
   tags: [deploy]
-  # before_script:
+  before_script:
   #   - command -v ssh >/dev/null || (sudo apt-get update -y && sudo apt-get install -y openssh-client)
   #   - mkdir -p ~/.ssh
-  #   - chmod 700 ~/.ssh
+    # - chmod 700 ~/.ssh
+    - chmod 400 $SSH_KEY
 
   #   # SSH_KEY is a File variable -> it's already a path to a temp file
   #   - cp "$SSH_KEY" ~/.ssh/id_ed25519
