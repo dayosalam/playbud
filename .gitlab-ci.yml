@@ -52,19 +52,15 @@ deploy_prod:
   tags:
     - deploy
   before_script:
-    # Ensure ssh client exists (works on Ubuntu/Debian runners)
     - command -v ssh || (sudo apt-get update -y && sudo apt-get install -y openssh-client)
-
-    # Setup SSH key
+    - eval "$(ssh-agent -s)"
+    - echo "$SSH_KEY" | tr -d '\r' | ssh-add -
     - mkdir -p ~/.ssh
-    - echo "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_ed25519
-    - chmod 600 ~/.ssh/id_ed25519
-
-    # Trust host (use the same host you ssh into)
-    - ssh-keyscan -H 72.62.41.159 >> ~/.ssh/known_hosts
+    - chmod 700 ~/.ssh
+    - printf "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null\n" > ~/.ssh/config
   script:
     - |
-      ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes dayo@72.62.41.159 "
+      ssh -o IdentitiesOnly=yes dayo@72.62.41.159 "
         set -e
         docker login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'
         cd '$DEPLOY_PATH'
