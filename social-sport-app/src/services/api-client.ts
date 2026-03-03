@@ -1,4 +1,8 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+const RAW_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+const API_BASE_URL =
+  typeof window !== "undefined" && window.location.protocol === "https:" && RAW_API_BASE_URL.startsWith("http://")
+    ? RAW_API_BASE_URL.replace("http://", "https://")
+    : RAW_API_BASE_URL;
 
 interface RequestOptions extends RequestInit {
   auth?: boolean;
