@@ -41,7 +41,7 @@ export interface GameResponse extends GamePayload {
 }
 
 export function createGame(payload: GamePayload): Promise<GameResponse> {
-  return apiRequest<GameResponse>("/games/", {
+  return apiRequest<GameResponse>("/games", {
     method: "POST",
     body: JSON.stringify(payload),
     auth: true,
@@ -50,7 +50,7 @@ export function createGame(payload: GamePayload): Promise<GameResponse> {
 
 export function listGames(limit = 50): Promise<GameResponse[]> {
   const params = new URLSearchParams({ limit: String(limit) });
-  return apiRequest<GameResponse[]>(`/games/?${params.toString()}`, {
+  return apiRequest<GameResponse[]>(`/games?${params.toString()}`, {
     method: "GET",
   });
 }
