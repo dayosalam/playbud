@@ -8,7 +8,7 @@ from pydantic import BaseModel, EmailStr
 
 from supabase import Client
 
-from .supabase_client import get_supabase_client
+from .supabase_client import get_supabase_client, SupabaseUnavailableError
 from ..schemas.feedback import Feedback, FeedbackCreate
 
 FEEDBACK_TABLE = "feedback"
@@ -17,7 +17,7 @@ FEEDBACK_TABLE = "feedback"
 def _client() -> Client:
     client = get_supabase_client()
     if client is None:
-        raise RuntimeError(
+        raise SupabaseUnavailableError(
             "Supabase client is not configured. Ensure SUPABASE_URL and SERVICE_ROLE environment variables are set."
         )
     return client

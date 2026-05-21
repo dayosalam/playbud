@@ -1,13 +1,26 @@
-from fastapi import FastAPI
+import httpx
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .core.config import get_settings
 from .routers import auth, reference_data, games, organizers, bookings, feedback, admin
+from .services.supabase_client import SupabaseUnavailableError
 
 
 settings = get_settings()
 
 app = FastAPI(title=settings.api_title, version=settings.api_version)
+
+
+@app.exception_handler(SupabaseUnavailableError)
+async def supabase_unavailable_handler(request: Request, exc: SupabaseUnavailableError):
+    return JSONResponse(status_code=503, content={"detail": "Database service is unavailable. Please try again later."})
+
+
+@app.exception_handler(httpx.ConnectError)
+async def httpx_connect_error_handler(request: Request, exc: httpx.ConnectError):
+    return JSONResponse(status_code=503, content={"detail": "Database service is unreachable. Please try again later."})
 
 app.add_middleware(
     CORSMiddleware,

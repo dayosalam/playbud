@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 from supabase import Client
 
-from .supabase_client import get_supabase_client
+from .supabase_client import get_supabase_client, SupabaseUnavailableError
 from ..schemas.games import GameCreate, Game
 from ..services.helper import parse_iso_datetime, parse_iso_time
 
@@ -19,7 +19,7 @@ GAMES_TABLE = "games"
 def _client() -> Client:
     client = get_supabase_client()
     if client is None:
-        raise RuntimeError(
+        raise SupabaseUnavailableError(
             "Supabase client is not configured. Ensure SUPABASE_URL and SERVICE_ROLE environment variables are set."
         )
     return client
