@@ -24,6 +24,15 @@ def _user_to_response(record: user_repository.UserRecord) -> UserBase:
     )
 
 
+def _send_welcome_email(record: user_repository.UserRecord) -> None:
+    try:
+        sent = email_service.send_welcome_email(recipient=record.email, name=record.name)
+        if not sent:
+            print("⚠️  Welcome email not sent (check SMTP settings).")
+    except Exception as exc:  # noqa: BLE001
+        print(f"⚠️  Welcome email failed: {exc}")
+
+
 def signup(payload: UserCreate) -> TokenResponse:
     existing = user_repository.get_user_by_email(payload.email)
     if existing:
@@ -49,12 +58,7 @@ def signup(payload: UserCreate) -> TokenResponse:
         refresh_token=refresh_token,
         user=_user_to_response(record),
     )
-    try:
-        sent = email_service.send_welcome_email(recipient=record.email, name=record.name)
-        if not sent:
-            print("⚠️  Welcome email not sent (check SMTP settings).")
-    except Exception as exc:  # noqa: BLE001
-        print(f"⚠️  Welcome email failed: {exc}")
+    _send_welcome_email(record)
     return response
 
 
@@ -111,6 +115,7 @@ def login_with_google(payload: GoogleAuthRequest) -> TokenResponse:
     avatar_url = claims.get("picture")
 
     record = user_repository.get_user_by_email(email)
+    is_new_user = record is None
     if not record:
         record = user_repository.create_user(
             email=email,
@@ -136,11 +141,14 @@ def login_with_google(payload: GoogleAuthRequest) -> TokenResponse:
     access_token = security.create_access_token(record.id)
     refresh_token = security.create_refresh_token(record.id)
 
-    return TokenResponse(
+    response = TokenResponse(
         access_token=access_token,
         refresh_token=refresh_token,
         user=_user_to_response(record),
     )
+    if is_new_user:
+        _send_welcome_email(record)
+    return response
 
 
 def get_user(user_id: str) -> UserBase:
