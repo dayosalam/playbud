@@ -6,6 +6,11 @@ from supabase import Client, create_client
 
 from ..core.config import get_settings
 
+
+class SupabaseUnavailableError(Exception):
+    """Raised when the Supabase client is not configured or cannot be reached."""
+
+
 _settings = get_settings()
 _client: Optional[Client] = None
 

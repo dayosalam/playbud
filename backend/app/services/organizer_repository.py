@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from postgrest.exceptions import APIError
 from supabase import Client
 
-from .supabase_client import get_supabase_client
+from .supabase_client import get_supabase_client, SupabaseUnavailableError
 
 ORGANIZERS_TABLE = "organizers"
 
@@ -16,7 +16,7 @@ ORGANIZERS_TABLE = "organizers"
 def _client() -> Client:
     client = get_supabase_client()
     if client is None:
-        raise RuntimeError(
+        raise SupabaseUnavailableError(
             "Supabase client is not configured. Ensure SUPABASE_URL and SERVICE_ROLE environment variables are set."
         )
     return client
