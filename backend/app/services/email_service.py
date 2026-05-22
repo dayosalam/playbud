@@ -3,6 +3,7 @@ from __future__ import annotations
 import smtplib
 from datetime import datetime, timedelta
 from email.message import EmailMessage
+from html import escape
 from threading import Timer
 from typing import Optional
 
@@ -99,13 +100,26 @@ def _hero_html(title: str, body: str, button_text: str, button_link: str, footer
 
 def send_welcome_email(*, recipient: str, name: str | None = None) -> bool:
     greeting = f"Hi {name}," if name else "Hi there,"
+    greeting_html = escape(greeting)
+    welcome_message = (
+        "I am Adedayo the CEO of PlayBud! Welcome to the community! You're now part of a community that loves "
+        "organising and joining social games."
+    )
+    next_steps = "Jump into Find Game to book your next session or create one in Add Game."
+    signoff = "See you on court!\nThe PlayBud Team"
     text_body = (
-        f"{greeting}\n\nWelcome to PlayBud! You're now part of a community that loves organising and joining social games."
-        "\nJump into Find Game to book your next session or create one in Add Game.\n\nSee you on court!\nThe PlayBud Team"
+        f"{greeting}\n\n{welcome_message}\n{next_steps}\n\n{signoff}"
+    )
+    body_html = (
+        f"{greeting_html}<br/><br/>"
+        f"{welcome_message}<br/>"
+        f"{next_steps}<br/><br/>"
+        "See you on court!<br/>"
+        "The PlayBud Team"
     )
     html_body = _hero_html(
         "You're in!",
-        f"{greeting}<br/>Thanks for joining the community. Here’s what you can do next.",
+        body_html,
         "Find games",
         "https://playbud.site/find-game",
     )

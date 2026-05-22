@@ -137,3 +137,15 @@ All colors MUST be HSL.
     @apply bg-background text-foreground font-poppins;
   }
 }
+
+@layer components {
+  .google-auth-button {
+    min-height: 40px;
+    overflow: hidden;
+  }
+
+  .google-auth-button > div {
+    transform: scaleX(var(--google-button-scale-x, 1));
+    transform-origin: left center;
+  }
+}

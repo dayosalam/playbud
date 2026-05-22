@@ -18,11 +18,16 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
   const [preferredCity, setPreferredCity] = useState("");
-  const [heardAbout, setHeardAbout] = useState("");
   const [cityOptions, setCityOptions] = useState<Array<{ value: string; label: string }>>([]);
   const { refreshUser } = useAuth();
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
+  const [googleButtonWidth, setGoogleButtonWidth] = useState(400);
+  const googleButtonRenderWidth = Math.min(googleButtonWidth, 400);
+  const googleButtonScale = googleButtonWidth / googleButtonRenderWidth;
+  const googleButtonStyle = {
+    "--google-button-scale-x": googleButtonScale.toString(),
+  } as React.CSSProperties;
 
   // Listen for URL parameter changes
   useEffect(() => {
@@ -88,17 +93,6 @@ const Auth = () => {
     const name = (formData.get("name") as string) || "";
 
     const selectedCity = preferredCity || ((formData.get("city") as string) || "");
-    const selectedHeardAbout = heardAbout || ((formData.get("source") as string) || "");
-
-    if (!selectedHeardAbout) {
-      toast({
-        title: "Tell us more",
-        description: "Please let us know how you heard about PlayBud.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
-    }
 
     try {
       await apiSignup({
@@ -106,7 +100,6 @@ const Auth = () => {
         password,
         name,
         preferredCity: selectedCity || null,
-        heardAbout: selectedHeardAbout || null,
       });
       await refreshUser();
       toast({
@@ -139,21 +132,11 @@ const Auth = () => {
         return;
       }
 
-      if (isSignup && !heardAbout) {
-        toast({
-          title: "Tell us more",
-          description: "Please let us know how you heard about PlayBud.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       setIsLoading(true);
       try {
         await loginWithGoogle({
           idToken: response.credential,
           preferredCity: preferredCity || null,
-          heardAbout: heardAbout || null,
         });
         await refreshUser();
         toast({
@@ -171,8 +154,30 @@ const Auth = () => {
         setIsLoading(false);
       }
     },
-    [heardAbout, isSignup, navigate, preferredCity, redirectPath, refreshUser]
+    [isSignup, navigate, preferredCity, redirectPath, refreshUser]
   );
+
+  useEffect(() => {
+    if (!googleButtonRef.current) return;
+
+    const updateButtonWidth = () => {
+      if (!googleButtonRef.current) return;
+      const measuredWidth = Math.floor(googleButtonRef.current.getBoundingClientRect().width);
+      if (measuredWidth <= 0) return;
+      setGoogleButtonWidth(Math.max(measuredWidth, 240));
+    };
+
+    updateButtonWidth();
+
+    if (typeof ResizeObserver === "undefined") return;
+
+    const resizeObserver = new ResizeObserver(updateButtonWidth);
+    resizeObserver.observe(googleButtonRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [isSignup]);
 
   useEffect(() => {
     if (!googleButtonRef.current) return;
@@ -193,7 +198,7 @@ const Auth = () => {
       window.google.accounts.id.renderButton(googleButtonRef.current, {
         theme: "outline",
         size: "large",
-        width: "100%",
+        width: `${googleButtonRenderWidth}`,
         text: isSignup ? "signup_with" : "signin_with",
         shape: "pill",
       });
@@ -216,7 +221,7 @@ const Auth = () => {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [googleClientId, handleGoogleCredential, isSignup]);
+  }, [googleButtonRenderWidth, googleClientId, handleGoogleCredential, isSignup]);
   
 
   if (isSignup) {
@@ -225,13 +230,13 @@ const Auth = () => {
         <div className="flex flex-1">
           {/* Left side - Form */}
           <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background">
-          <div className="w-full max-w-md space-y-8">
+          <div className="w-full max-w-md lg:max-w-lg space-y-8">
             <div>
               <h1 className="text-3xl font-bold">Create Account</h1>
             </div>
 
             <div className="space-y-3">
-              <div ref={googleButtonRef} />
+              <div ref={googleButtonRef} className="google-auth-button w-full" style={googleButtonStyle} />
               {!googleClientId ? (
                 <p className="text-xs text-muted-foreground">
                   Google login is not configured yet.
@@ -315,22 +320,6 @@ const Auth = () => {
                 />
               </div> */}
 
-              <div className="space-y-2">
-                <Label htmlFor="source">How did you hear about us?</Label>
-                <Select value={heardAbout || undefined} onValueChange={setHeardAbout}>
-                  <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Select choice" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="social">Social Media</SelectItem>
-                    <SelectItem value="friend">Friend</SelectItem>
-                    <SelectItem value="search">Search Engine</SelectItem>
-                    <SelectItem value="ad">Advertisement</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
               <Button 
                 type="submit" 
                 className="w-full h-12 hover:bg-[#FF8B6A]/90 text-white"
@@ -373,14 +362,14 @@ const Auth = () => {
       <div className="flex flex-1">
         {/* Left side - Form */}
         <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background">
-          <div className="w-full max-w-md space-y-8">
+          <div className="w-full max-w-md lg:max-w-lg space-y-8">
             <div>
               <h1 className="text-3xl font-bold">Welcome Back</h1>
               <p className="text-muted-foreground mt-2">Sign in to continue to PlayBud</p>
             </div>
 
             <div className="space-y-3">
-              <div ref={googleButtonRef} />
+              <div ref={googleButtonRef} className="google-auth-button w-full" style={googleButtonStyle} />
               {!googleClientId ? (
                 <p className="text-xs text-muted-foreground">
                   Google login is not configured yet.
