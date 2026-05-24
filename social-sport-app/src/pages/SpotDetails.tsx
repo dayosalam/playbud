@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   Calendar,
@@ -30,7 +30,11 @@ import {
   type ReferenceDataResponse,
 } from "@/services/reference.service";
 import { getGame, type GameResponse } from "@/services/games.service";
-import { joinGame as joinGameBooking } from "@/services/bookings.service";
+import {
+  getGameParticipants,
+  joinGame as joinGameBooking,
+  type BookingParticipant,
+} from "@/services/bookings.service";
 import {
   gameToSpot,
   type SpotTransformLookups,
@@ -121,10 +125,20 @@ const getInitialsFromName = (name: string) =>
     .join("")
     .slice(0, 2) || "";
 
+const fetchParticipantsForGame = async (gameId: string) => {
+  try {
+    return await getGameParticipants(gameId);
+  } catch (participantError) {
+    console.error("Failed to load game participants", participantError);
+    return [];
+  }
+};
+
 const SpotDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const locationSpot = (location.state as LocationState | undefined)?.spot ?? null;
   const { toast } = useToast();
   const { isAuthenticated, user } = useAuth();
@@ -134,11 +148,13 @@ const SpotDetails = () => {
   const [isLoading, setIsLoading] = useState<boolean>(!locationSpot);
   const [error, setError] = useState<string | null>(null);
   const [isJoinOpen, setIsJoinOpen] = useState(false);
+  const [isAuthPromptOpen, setIsAuthPromptOpen] = useState(false);
   const [isJoinSubmitting, setIsJoinSubmitting] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
   const [attendeeName, setAttendeeName] = useState("");
   const [attendeeEmail, setAttendeeEmail] = useState("");
   const [note, setNote] = useState("");
+  const [participants, setParticipants] = useState<BookingParticipant[]>([]);
   useEffect(() => {
     if (isJoinOpen && user?.email && !attendeeEmail) {
       setAttendeeEmail(user.email);
@@ -149,8 +165,12 @@ const SpotDetails = () => {
       return;
     }
     try {
-      const data = await getGame(id);
-      setRawGame(data);
+      const [gameData, participantData] = await Promise.all([
+        getGame(id),
+        fetchParticipantsForGame(id),
+      ]);
+      setRawGame(gameData);
+      setParticipants(participantData);
     } catch (refreshError) {
       console.error("Failed to refresh game", refreshError);
     }
@@ -187,9 +207,13 @@ const SpotDetails = () => {
         setIsLoading(true);
       }
       try {
-        const data = await getGame(id);
+        const [gameData, participantData] = await Promise.all([
+          getGame(id),
+          fetchParticipantsForGame(id),
+        ]);
         if (!cancelled) {
-          setRawGame(data);
+          setRawGame(gameData);
+          setParticipants(participantData);
           setError(null);
         }
       } catch (gameError) {
@@ -219,26 +243,45 @@ const SpotDetails = () => {
   }, [rawGame, lookups, locationSpot]);
 
   useEffect(() => {
-    if (spot?.players && user?.id) {
-      setHasJoined(spot.players.some((player) => player.id === user.id));
+    if (user?.id) {
+      const participantIds = participants.map((participant) => participant.user.id);
+      const playerIds = spot?.players?.map((player) => player.id) ?? [];
+      setHasJoined([...participantIds, ...playerIds].includes(user.id));
     } else {
       setHasJoined(false);
     }
-  }, [spot?.players, user?.id]);
+  }, [participants, spot?.players, user?.id]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !spot || hasJoined || searchParams.get("join") !== "1") {
+      return;
+    }
+
+    setIsJoinOpen(true);
+    setSearchParams((currentParams) => {
+      const nextParams = new URLSearchParams(currentParams);
+      nextParams.delete("join");
+      return nextParams;
+    }, { replace: true });
+  }, [hasJoined, isAuthenticated, searchParams, setSearchParams, spot]);
+
   const handleJoinButtonClick = () => {
     if (!spot) {
       return;
     }
     if (!isAuthenticated) {
-      toast({
-        title: "Sign in required",
-        description: "Create an account or log in before joining a game.",
-        variant: "destructive",
-      });
-      navigate("/auth", { state: { from: `/games/${spot.id}` } });
+      setIsAuthPromptOpen(true);
       return;
     }
     setIsJoinOpen(true);
+  };
+
+  const handleAuthRedirect = (path: string) => {
+    if (!spot) {
+      return;
+    }
+    setIsAuthPromptOpen(false);
+    navigate(path, { state: { from: `/games/${spot.id}?join=1` } });
   };
   const mapsUrl = useMemo(() => {
     if (!spot) {
@@ -267,6 +310,21 @@ const SpotDetails = () => {
   >({});
 
   const displayParticipants = useMemo<DisplayParticipant[]>(() => {
+    if (participants.length > 0) {
+      return participants.map((participant, index) => {
+        const override = participantNameOverrides[participant.user.id];
+        const fallbackName = `Player ${index + 1}`;
+        const name = override?.name || participant.user.name?.trim() || fallbackName;
+        const initials = override?.initials || getInitialsFromName(name) || `P${index + 1}`;
+        return {
+          id: participant.user.id,
+          name,
+          initials,
+          profileHref: `/profile?user=${participant.user.id}`,
+        };
+      });
+    }
+
     const players = spot?.players ?? [];
     return players.map((player, index) => {
       const override = player.id ? participantNameOverrides[player.id] : undefined;
@@ -281,7 +339,7 @@ const SpotDetails = () => {
         profileHref,
       };
     });
-  }, [spot?.players, participantNameOverrides]);
+  }, [spot?.players, participantNameOverrides, participants]);
 
   const resetForm = () => {
     setAttendeeName("");
@@ -618,7 +676,7 @@ const SpotDetails = () => {
                     ) : (
                       <img
                         src={brandIcon}
-                        alt={`${player.name} avatar`}
+                        alt="PlayBud avatar"
                         className="h-full w-full object-cover"
                       />
                     )}
@@ -771,6 +829,33 @@ const SpotDetails = () => {
               disabled={isJoinSubmitting || !attendeeName.trim()}
             >
               {isJoinSubmitting ? "Joining..." : "Join game"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isAuthPromptOpen} onOpenChange={setIsAuthPromptOpen}>
+        <DialogContent className="max-w-sm rounded-3xl text-center">
+          <DialogHeader className="text-center">
+            <DialogTitle className="text-2xl font-semibold text-foreground">
+              Join this game
+            </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Create an account or log in to reserve your spot in {spot.title}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3">
+            <Button
+              className="rounded-full"
+              onClick={() => handleAuthRedirect("/auth?mode=signup")}
+            >
+              Sign up
+            </Button>
+            <Button
+              variant="outline"
+              className="rounded-full"
+              onClick={() => handleAuthRedirect("/auth")}
+            >
+              Log in
             </Button>
           </div>
         </DialogContent>
