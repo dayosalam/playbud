@@ -121,6 +121,10 @@ const Auth = () => {
     navigate("/forgot-password");
   };
 
+  const handleAuthModeChange = (path: string) => {
+    navigate(path, { state: location.state });
+  };
+
   const handleGoogleCredential = useCallback(
     async (response: GoogleCredentialResponse) => {
       if (!response?.credential) {
@@ -332,7 +336,7 @@ const Auth = () => {
                 Already have an account?{" "}
               <button
                 type="button"
-                onClick={() => navigate("/auth")}
+                onClick={() => handleAuthModeChange("/auth")}
                 className="text-primary hover:underline font-medium"
               >
                 Login
@@ -429,7 +433,7 @@ const Auth = () => {
                 Don't have an account?{" "}
                 <button
                   type="button"
-                  onClick={() => navigate("/auth?mode=signup")}
+                  onClick={() => handleAuthModeChange("/auth?mode=signup")}
                   className="text-primary hover:underline font-medium"
                 >
                   Sign up
